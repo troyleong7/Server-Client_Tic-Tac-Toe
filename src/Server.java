@@ -11,7 +11,7 @@ public class Server extends UnicastRemoteObject implements RMI{
 	private static int port = 1098;
 	
 	protected Server() throws RemoteException {
-		super()
+		super();
 	}
 
 	@Override
