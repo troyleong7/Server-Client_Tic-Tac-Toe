@@ -29,16 +29,15 @@ public class ClientGUI extends JFrame {
 	private static JTextPane timerPane;
 	private static JTextArea chatLog;
 	private static JTextField messageField;
-	String username;
 	static String partner;
+	String username;
 	Service server;
 	
 	/**
 	 * Create the application.
 	 * @throws RemoteException 
 	 */
-	public ClientGUI(String username) throws RemoteException{
-		this.username = username;
+	public ClientGUI(String username, Service server) throws RemoteException{
 		initialize();
 		
 		messageField.addActionListener(new ActionListener() {
@@ -49,7 +48,7 @@ public class ClientGUI extends JFrame {
 	    		server.sendMessage(username, messageField.getText());
 	    		messageField.setText("");
 	    	} catch (RemoteException e1) {
-	    		e1.printStackTrace();
+	    		System.out.println("no");
 			}
 	    }
 		});
@@ -173,4 +172,5 @@ public class ClientGUI extends JFrame {
 	public void showMessage(String username, String message) {
 		chatLog.append(username + " : " + message + "\n");
 	}
+	
 }

@@ -45,7 +45,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
         for (ClientFunction client: activeClients) {
 			try {
 				if(client.getUsername().equals(username)) {
-					client.receiveMessage(message);
+					client.getPartner().receiveMessage(message);
 				}
 			} catch (RemoteException e) {
 				e.printStackTrace();
