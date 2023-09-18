@@ -11,6 +11,7 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	public Service server;
 	public String username;
 	public ClientFunction partner;
+	public boolean yourTurn;
 	
 	protected ClientService(Service server, String username, ClientGUI GUI) throws RemoteException {
 		this.server = server;
@@ -44,6 +45,18 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	@Override
 	public void playerFound() throws RemoteException{
 		GUI.startTimer();
+	}
+
+
+	@Override
+	public void startMove() throws RemoteException {
+		GUI.turn(true);
+	}
+
+
+	@Override
+	public void receiveBoardState(char[][] board) throws RemoteException {
+		GUI.updateBoard(board);
 	}
 	
 

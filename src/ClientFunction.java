@@ -7,4 +7,6 @@ public interface ClientFunction extends Remote{
     ClientFunction getPartner() throws RemoteException;
     void setPartner(ClientFunction partner) throws RemoteException;
 	void playerFound() throws RemoteException;
+	void startMove() throws RemoteException;
+	void receiveBoardState(char[][] board) throws RemoteException;
 }

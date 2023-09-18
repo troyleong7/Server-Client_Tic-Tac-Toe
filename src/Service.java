@@ -18,6 +18,11 @@ public interface Service extends Remote {
 	void unregister(ClientFunction client) throws RemoteException;
 
 	void sendMessage(String username, String message) throws RemoteException;
+	
+	void randomAssign(ClientFunction client1, ClientFunction client2) throws RemoteException;
+	
+	boolean isGameOver(TicTacToe tictactoe) throws RemoteException;
 
-
+	void sendBoardState(String username, char[][] board) throws RemoteException;
+ 
 }

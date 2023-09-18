@@ -29,7 +29,9 @@ public class ClientGUI extends JFrame {
 	private static JTextPane timerPane;
 	private static JTextArea chatLog;
 	private static JTextField messageField;
-	static String partner;
+	private static JLabel turnLabel;
+	private static TicTacToe tictactoe;
+	public boolean turn = false;
 	String username;
 	Service server;
 	
@@ -38,6 +40,8 @@ public class ClientGUI extends JFrame {
 	 * @throws RemoteException 
 	 */
 	public ClientGUI(String username, Service server) throws RemoteException{
+		this.server = server;
+		this.username = username;
 		initialize();
 		
 		messageField.addActionListener(new ActionListener() {
@@ -52,12 +56,14 @@ public class ClientGUI extends JFrame {
 			}
 	    }
 		});
+		
 	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		System.out.println(username);
 		setBounds(100, 100, 670, 428);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
@@ -101,21 +107,6 @@ public class ClientGUI extends JFrame {
 		chatLabel.setBounds(448, 11, 196, 23);
 		getContentPane().add(chatLabel);
 		
-		TicTacToe tictactoe = new TicTacToe();
-		tictactoe.setBounds(10, 11, 280, 278);
-		JPanel panel = new JPanel();
-		panel.setBounds(138, 67, 300, 300);
-		getContentPane().add(panel);
-		panel.setLayout(null);
-		panel.add(tictactoe);
-		
-		JLabel turnLabel = new JLabel("Player turn");
-		turnLabel.setOpaque(true);
-		turnLabel.setBackground(SystemColor.text);
-		turnLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		turnLabel.setBounds(137, 33, 301, 34);
-		getContentPane().add(turnLabel);
-		
 		timerPane = new JTextPane();
 		timerPane.setEditable(false);
 		timerPane.setBackground(SystemColor.menu);
@@ -130,6 +121,20 @@ public class ClientGUI extends JFrame {
 		timerPane.setFont(new Font("Tahoma", Font.PLAIN, 25));
 		timerPane.setText("Waiting for player");
 		
+		turnLabel = new JLabel("");
+		turnLabel.setOpaque(true);
+		turnLabel.setBackground(SystemColor.text);
+		turnLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		turnLabel.setBounds(137, 33, 301, 34);
+		getContentPane().add(turnLabel);
+		
+		tictactoe = new TicTacToe(server, username);
+		tictactoe.setBounds(10, 11, 280, 278);
+		JPanel panel = new JPanel();
+		panel.setBounds(138, 67, 300, 300);
+		getContentPane().add(panel);
+		panel.setLayout(null);
+		panel.add(tictactoe);
 		
 		setVisible(true);
 		
@@ -173,4 +178,14 @@ public class ClientGUI extends JFrame {
 		chatLog.append(username + " : " + message + "\n");
 	}
 	
+	public void turn(boolean nextTurn) {
+		turn = nextTurn;
+		tictactoe.setTurn(nextTurn);
+	}
+	
+	
+	public void updateBoard(char[][] board) {
+		tictactoe.board = board;
+		tictactoe.displayBoard(board);
+	}
 }

@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 
 public class TicTacToe extends JPanel implements ActionListener {
     /**
@@ -9,14 +10,22 @@ public class TicTacToe extends JPanel implements ActionListener {
 	 */
 	private static final long serialVersionUID = 1L;
 	// Create a 2D array to represent the game board
-    private char[][] board = new char[3][3];
-    private char currentPlayer = 'O'; // Player O starts
-    private JButton[][] buttons = new JButton[3][3];
+    public char[][] board = new char[3][3];
+    public char currentPlayer = 'O'; // Player O starts
+    public JButton[][] buttons = new JButton[3][3];
+    private boolean yourTurn;
+    private boolean isGameOver;
+    private Service server;
+    private String username;
 
-    public TicTacToe() {
+    public TicTacToe(Service server, String username) {
         // Initialize the game board and set up the GUI
+    	this.username = username;
+    	this.server = server;
         initializeBoard();
         initializeGUI();
+        yourTurn = false;
+        isGameOver = false;
     }
 
     private void initializeBoard() {
@@ -51,7 +60,7 @@ public class TicTacToe extends JPanel implements ActionListener {
         JButton clickedButton = (JButton) e.getSource();
 
         // Check if the clicked button is empty and it's a valid move
-        if (clickedButton.getText().equals("") && !isGameOver()) {
+        if (yourTurn && clickedButton.getText().equals("") && !isGameOver) {
             clickedButton.setText(String.valueOf(currentPlayer));
             int row = -1, col = -1;
 
@@ -68,9 +77,14 @@ public class TicTacToe extends JPanel implements ActionListener {
 
             // Update the game board
             board[row][col] = currentPlayer;
-
+            
+            try {
+				server.sendBoardState(username, board);
+			} catch (RemoteException e1) {
+				e1.printStackTrace();
+			}
             // Check if the game is over
-            if (isGameOver()) {
+            if (isGameOver) {
             	ClientGUI.announceWinner("Player " + currentPlayer + " wins! \n");
             } else {
                 // Switch to the other player
@@ -79,36 +93,21 @@ public class TicTacToe extends JPanel implements ActionListener {
         }
     }
 
-    private boolean isGameOver() {
-        // Check for a win condition
-        for (int i = 0; i < 3; i++) {
-            if (board[i][0] == currentPlayer && board[i][1] == currentPlayer && board[i][2] == currentPlayer) {
-                return true; // Horizontal win
-            }
-            if (board[0][i] == currentPlayer && board[1][i] == currentPlayer && board[2][i] == currentPlayer) {
-                return true; // Vertical win
-            }
-        }
 
-        if (board[0][0] == currentPlayer && board[1][1] == currentPlayer && board[2][2] == currentPlayer) {
-            return true; // Diagonal win (top-left to bottom-right)
-        }
-
-        if (board[0][2] == currentPlayer && board[1][1] == currentPlayer && board[2][0] == currentPlayer) {
-            return true; // Diagonal win (top-right to bottom-left)
-        }
-
-        // Check for a draw
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (board[i][j] == ' ') {
-                    return false; // There are still empty spaces
-                }
-            }
-        }
-
-        ClientGUI.announceWinner("It's a draw \n");
-        return false;
+    public void setTurn(boolean turn) {
+    	yourTurn = turn;
     }
-
+    
+    public boolean getTurn() {
+    	return yourTurn;
+    }
+    
+    public void displayBoard(char[][] newBoard) {
+    	for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                board[i][j] = newBoard[i][j];
+                buttons[i][j].setText(String.valueOf(board[i][j]));
+            }
+    	}
+    }
 }
