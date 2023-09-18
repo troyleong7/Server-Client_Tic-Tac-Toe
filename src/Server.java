@@ -1,26 +1,51 @@
 //Name: Yun Keng Leong	StudentID: 1133704
 
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
-/**
- * Creates an instance of the RemoteMath class and
- * publishes it in the rmiregistry
- * 
- */
-public class Server {
+public class Server extends UnicastRemoteObject implements RMI{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private static int port = 1098;
+	
+	protected Server() throws RemoteException {
+		super()
+	}
 
-	public static void main(String[] args)  {
+	@Override
+	public void registerClient(Client client) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void joinChat(Client client) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String sendMessage(String message) throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String recieveMessage(String Message) throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+public static void main(String[] args)  {
 		
 		try {
 			
-			RMI remote = new SRMI();
-            
-            //Publish the remote object's stub in the registry under the name "Compute"
-            Registry registry = LocateRegistry.getRegistry();
-            registry.bind("Compute", remote);
-            
-            System.out.println("Server ready");
+			Server server = new Server();
+			java.rmi.registry.LocateRegistry.createRegistry(port);
+            java.rmi.Naming.rebind("Server", server);
+            System.out.println("Chat server is running.");
             
 		} catch (Exception e) {
 			e.printStackTrace();

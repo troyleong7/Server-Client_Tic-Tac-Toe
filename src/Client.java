@@ -14,15 +14,14 @@ public class Client {
 
 	public static void main(String[] args) {
 		try {
-			String name;
 			//Connect to the rmiregistry that is running on localhost
 			Registry registry = LocateRegistry.getRegistry("localhost");
            
 			//Retrieve the stub/proxy for the remote math object from the registry
-			RMI remote = (RMI) registry.lookup("Compute");
+			RMI remote = (RMI) registry.lookup("Server");
            
 			//Call methods on the remote object as if it was a local object
-			
+			System.out.println("Connected to server ");
 		}catch(Exception e) {
 			e.printStackTrace();
 		}

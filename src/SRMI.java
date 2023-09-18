@@ -2,9 +2,6 @@
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.LinkedList;
-import java.util.Queue;
-
 /**
  * Server side implementation of the remote interface.
  * Must extend UnicastRemoteObject, to allow the JVM to create a 
@@ -12,8 +9,10 @@ import java.util.Queue;
  *
  */
 public class SRMI extends UnicastRemoteObject implements RMI {
-	private Queue<Client> waitingClients = new LinkedList<>();
-    private Queue<Client> pairedClients = new LinkedList<>();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Added 
@@ -21,6 +20,7 @@ public class SRMI extends UnicastRemoteObject implements RMI {
 	//private static final long serialVersionUID = 1L;
 	
 	protected SRMI() throws RemoteException {
+		super();
 	}
 
 	@Override

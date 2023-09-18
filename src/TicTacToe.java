@@ -71,7 +71,7 @@ public class TicTacToe extends JPanel implements ActionListener {
 
             // Check if the game is over
             if (isGameOver()) {
-                JOptionPane.showMessageDialog(this, "Player " + currentPlayer + " wins!");
+            	ClientGUI.announceWinner("Player " + currentPlayer + " wins! \n");
             } else {
                 // Switch to the other player
                 currentPlayer = (currentPlayer == 'O') ? 'X' : 'O';
@@ -107,7 +107,7 @@ public class TicTacToe extends JPanel implements ActionListener {
             }
         }
 
-        JOptionPane.showMessageDialog(this, "It's a draw!");
+        ClientGUI.announceWinner("It's a draw \n");
         return false;
     }
 

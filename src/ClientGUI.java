@@ -16,7 +16,6 @@ import javax.swing.JTextPane;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.FlowLayout;
 
 public class ClientGUI {
 
@@ -24,8 +23,8 @@ public class ClientGUI {
 	private Timer timer;
 	private int countdown;
 	private JTextPane timerPane;
+	private static JTextArea chatLog;
 	
-
 	/**
 	 * Launch the application.
 	 */
@@ -81,7 +80,7 @@ public class ClientGUI {
 		scrollPane.setBounds(448, 34, 196, 312);
 		frame.getContentPane().add(scrollPane);
 		
-		JTextArea chatLog = new JTextArea();
+		chatLog = new JTextArea();
 		chatLog.setLineWrap(true);
 		chatLog.setEditable(false);
 		scrollPane.setViewportView(chatLog);
@@ -153,4 +152,8 @@ public class ClientGUI {
         String timeString = String.format("%02d", seconds);
         timerPane.setText("Timer: \n" + timeString);
     }
+	
+	public static void announceWinner(String announcement) {
+		chatLog.append(announcement);
+	}
 }
