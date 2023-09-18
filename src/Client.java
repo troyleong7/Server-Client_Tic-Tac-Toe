@@ -11,19 +11,22 @@ import java.rmi.registry.Registry;
  *
  */
 public class Client {
+	
 
 	public static void main(String[] args) {
 		try {
-			//Connect to the rmiregistry that is running on localhost
+			String username;
+			username = args[0];
 			Registry registry = LocateRegistry.getRegistry("localhost");
-           
-			//Retrieve the stub/proxy for the remote math object from the registry
-			RMI remote = (RMI) registry.lookup("Server");
-           
-			//Call methods on the remote object as if it was a local object
+			Service server = (Service) registry.lookup("Server");
+			ClientGUI GUI = new ClientGUI(username);
+			ClientFunction client = new ClientService(server, username, GUI);
+			
 			System.out.println("Connected to server ");
+			
 		}catch(Exception e) {
 			e.printStackTrace();
+			System.exit(0);
 		}
 	
 	}

@@ -11,10 +11,13 @@ import java.rmi.RemoteException;
  * Any object that is a remote object must implement this interface.
  * Only those methods specified in a "remote interface" are available remotely.
  */
-public interface RMI extends Remote {
-	public void registerClient(Client client) throws RemoteException;
-    public void joinChat(Client client) throws RemoteException;
-	public String sendMessage(String message) throws RemoteException;
-	public String recieveMessage(String Message) throws RemoteException;
-	
+public interface Service extends Remote {
+
+	void registerClient(ClientFunction client) throws RemoteException;
+
+	void unregister(ClientFunction client) throws RemoteException;
+
+	void sendMessage(String username, String message) throws RemoteException;
+
+
 }

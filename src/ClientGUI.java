@@ -1,4 +1,3 @@
-import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -16,46 +15,53 @@ import javax.swing.JTextPane;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 
-public class ClientGUI {
-
-	private JFrame frame;
-	private Timer timer;
-	private int countdown;
-	private JTextPane timerPane;
-	private static JTextArea chatLog;
+public class ClientGUI extends JFrame {
+	
 	
 	/**
-	 * Launch the application.
+	 * 
 	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					ClientGUI window = new ClientGUI();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
+	private static final long serialVersionUID = 1L;
+	private static Timer timer;
+	private static int countdown;
+	private static JTextPane timerPane;
+	private static JTextArea chatLog;
+	private static JTextField messageField;
+	String username;
+	static String partner;
+	Service server;
+	
 	/**
 	 * Create the application.
+	 * @throws RemoteException 
 	 */
-	public ClientGUI() {
+	public ClientGUI(String username) throws RemoteException{
+		this.username = username;
 		initialize();
+		
+		messageField.addActionListener(new ActionListener() {
+	    @Override
+	    public void actionPerformed(ActionEvent e) {
+	    	chatLog.append(username + " : " + messageField.getText() + "\n");
+	    	try {
+	    		server.sendMessage(username, messageField.getText());
+	    		messageField.setText("");
+	    	} catch (RemoteException e1) {
+	    		e1.printStackTrace();
+			}
+	    }
+		});
 	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
-		frame.setBounds(100, 100, 670, 428);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(null);
+		setBounds(100, 100, 670, 428);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		getContentPane().setLayout(null);
 		
 		JTextPane gameLabel = new JTextPane();
 		gameLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
@@ -64,7 +70,7 @@ public class ClientGUI {
 		gameLabel.setEditable(false);
 		gameLabel.setText("Distributed Tic-Tac-Toe");
 		gameLabel.setBounds(10, 189, 105, 59);
-		frame.getContentPane().add(gameLabel);
+		getContentPane().add(gameLabel);
 		
 		JButton quitButton = new JButton("QUIT");
 		quitButton.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -74,40 +80,33 @@ public class ClientGUI {
 				System.exit(0);
 			}
 		});
-		frame.getContentPane().add(quitButton);
+		getContentPane().add(quitButton);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(448, 34, 196, 312);
-		frame.getContentPane().add(scrollPane);
+		getContentPane().add(scrollPane);
 		
 		chatLog = new JTextArea();
 		chatLog.setLineWrap(true);
 		chatLog.setEditable(false);
 		scrollPane.setViewportView(chatLog);
 		
-		JTextField messageField = new JTextField();
+		messageField = new JTextField();
 		messageField.setBounds(448, 344, 196, 34);
-		frame.getContentPane().add(messageField);
+		getContentPane().add(messageField);
 		messageField.setColumns(10);
-		messageField.addActionListener(new ActionListener() {
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
-		       chatLog.append(messageField.getText() + "\n");
-		       messageField.setText("");
-		    }
-		});
 		
 		JLabel chatLabel = new JLabel("Player Chat");
 		chatLabel.setFont(new Font("Tahoma", Font.BOLD, 11));
 		chatLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		chatLabel.setBounds(448, 11, 196, 23);
-		frame.getContentPane().add(chatLabel);
+		getContentPane().add(chatLabel);
 		
 		TicTacToe tictactoe = new TicTacToe();
 		tictactoe.setBounds(10, 11, 280, 278);
 		JPanel panel = new JPanel();
 		panel.setBounds(138, 67, 300, 300);
-		frame.getContentPane().add(panel);
+		getContentPane().add(panel);
 		panel.setLayout(null);
 		panel.add(tictactoe);
 		
@@ -116,21 +115,31 @@ public class ClientGUI {
 		turnLabel.setBackground(SystemColor.text);
 		turnLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		turnLabel.setBounds(137, 33, 301, 34);
-		frame.getContentPane().add(turnLabel);
+		getContentPane().add(turnLabel);
 		
 		timerPane = new JTextPane();
 		timerPane.setEditable(false);
 		timerPane.setBackground(SystemColor.menu);
-		timerPane.setFont(new Font("Tahoma", Font.PLAIN, 30));
 		timerPane.setBounds(10, 34, 105, 105);
 		
 		StyledDocument doc = timerPane.getStyledDocument();
 		SimpleAttributeSet center = new SimpleAttributeSet();
 		StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
 		doc.setParagraphAttributes(0, doc.getLength(), center, false);
-		frame.getContentPane().add(timerPane);
+		getContentPane().add(timerPane);
 		
+		timerPane.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		timerPane.setText("Waiting for player");
+		
+		
+		setVisible(true);
+		
+	}
+	
+	
+	public void startTimer() {
 		countdown = 20;
+		timerPane.setFont(new Font("Tahoma", Font.PLAIN, 30));
         timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -146,7 +155,7 @@ public class ClientGUI {
         timer.start();
 	}
 	
-	private void updateTimerDisplay() {
+	private static void updateTimerDisplay() {
         int seconds = countdown % 60;
 
         String timeString = String.format("%02d", seconds);
@@ -155,5 +164,13 @@ public class ClientGUI {
 	
 	public static void announceWinner(String announcement) {
 		chatLog.append(announcement);
+	}
+
+	public void playerFound() {
+		startTimer();
+	}
+	
+	public void showMessage(String username, String message) {
+		chatLog.append(username + " : " + message + "\n");
 	}
 }
