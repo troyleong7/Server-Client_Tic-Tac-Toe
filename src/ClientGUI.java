@@ -148,10 +148,14 @@ public class ClientGUI extends JFrame {
         timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                countdown--;
-                updateTimerDisplay();
-                if (countdown <= 0) {
+            	countdown--;
+            	updateTimerDisplay();
+                if (countdown < 0) {
                     timer.stop();
+                }
+                else if (countdown == 0) {
+                    timer.stop();
+                    tictactoe.playRandomMove();
                 }
             }
         });
@@ -165,6 +169,9 @@ public class ClientGUI extends JFrame {
         if(countdown <=0) {
         	timerPane.setFont(new Font("Tahoma", Font.PLAIN, 20));
     		timerPane.setText("Waiting for player turn");
+    		if(tictactoe.isGameOver) {
+    			timerPane.setText("Game ended" );
+    		}
         }
         else {
         	String timeString = String.format("%02d", seconds);
@@ -172,8 +179,10 @@ public class ClientGUI extends JFrame {
         }
     }
 	
-	public static void announceWinner(String announcement) {
-		chatLog.append(announcement);
+	public void announceWinner(String winner) {
+		turnLabel.setText("Player " + winner + " wins!");
+		tictactoe.GameOver();
+		updateTimerDisplay();
 	}
 
 	public void playerFound() {
@@ -192,7 +201,8 @@ public class ClientGUI extends JFrame {
 		}
 		else {
 			char partnerSymb;
-			countdown = 0;
+			countdown = -1;
+			updateTimerDisplay();
 			if(tictactoe.currentPlayer == 'O') {
 				partnerSymb = 'X';
 			}
@@ -214,6 +224,12 @@ public class ClientGUI extends JFrame {
 
 	public void getSymbol(char symb) {
 		tictactoe.currentPlayer = symb;
+	}
+
+	public void announceDraw() {
+		turnLabel.setText("Match drawn");
+		tictactoe.GameOver();
+		updateTimerDisplay();
 	}
 	
 }

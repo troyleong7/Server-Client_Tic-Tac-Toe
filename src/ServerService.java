@@ -85,39 +85,39 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	}
 
 	@Override
-	public boolean isGameOver(TicTacToe tictactoe) throws RemoteException {
+	public int isGameOver(TicTacToe tictactoe) throws RemoteException {
 		char[][] board = tictactoe.board;
 		char currentPlayer = tictactoe.currentPlayer;
         // Check for a win condition
         for (int i = 0; i < 3; i++) {
             if (board[i][0] == currentPlayer && board[i][1] == currentPlayer && board[i][2] == currentPlayer) {
-                return true; // Horizontal win
+                return 1; // Horizontal win
             }
             if (board[0][i] == currentPlayer && board[1][i] == currentPlayer && board[2][i] == currentPlayer) {
-                return true; // Vertical win
+                return 1; // Vertical win
             }
         }
 
         if (board[0][0] == currentPlayer && board[1][1] == currentPlayer && board[2][2] == currentPlayer) {
-            return true; // Diagonal win (top-left to bottom-right)
+            return 1; // Diagonal win (top-left to bottom-right)
         }
 
         if (board[0][2] == currentPlayer && board[1][1] == currentPlayer && board[2][0] == currentPlayer) {
-            return true; // Diagonal win (top-right to bottom-left)
+            return 1; // Diagonal win (top-right to bottom-left)
         }
 
         // Check for a draw
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 if (board[i][j] == ' ') {
-                    return false; // There are still empty spaces
+                    return 0; // There are still empty spaces
                 }
             }
         }
-
-        ClientGUI.announceWinner("It's a draw \n");
-        return true;
+        
+        return 2;
     }
+
 
 	@Override
 	public void sendBoardState(String username, char[][] board) throws RemoteException {
@@ -127,6 +127,41 @@ public class ServerService extends UnicastRemoteObject implements Service {
 					client.getPartner().receiveBoardState(board);
 					client.startMove(false);
 					client.getPartner().startMove(true);
+				}
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void announceWinner(String username, char[][] board) throws RemoteException {
+		for (ClientFunction client: activeClients) {
+			try {
+				if(client.getUsername().equals(username)) {
+					client.getPartner().receiveBoardState(board);
+					client.startMove(false);
+					client.getPartner().startMove(false);
+					client.getPartner().receiveWinner(username);
+					client.receiveWinner(username);
+				}
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+
+	@Override
+	public void drawGame(String username, char[][] board) {
+		for (ClientFunction client: activeClients) {
+			try {
+				if(client.getUsername().equals(username)) {
+					client.getPartner().receiveBoardState(board);
+					client.startMove(false);
+					client.getPartner().startMove(false);
+					client.getPartner().receiveDraw();
+					client.receiveDraw();
 				}
 			} catch (RemoteException e) {
 				e.printStackTrace();

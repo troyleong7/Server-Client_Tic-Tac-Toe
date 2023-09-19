@@ -65,6 +65,19 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	public void assignSymb(char symb) throws RemoteException {
 		GUI.getSymbol(symb);
 	}
+
+
+	@Override
+	public void receiveWinner(String username) throws RemoteException {
+		GUI.announceWinner(username);
+		
+	}
+
+
+	@Override
+	public void receiveDraw() throws RemoteException {
+		GUI.announceDraw();
+	}
 	
 
 }

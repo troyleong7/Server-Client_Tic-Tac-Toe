@@ -9,5 +9,7 @@ public interface ClientFunction extends Remote{
 	void playerFound() throws RemoteException;
 	void startMove(boolean move) throws RemoteException;
 	void receiveBoardState(char[][] board) throws RemoteException;
-	void assignSymb(char symb) throws RemoteException;;
+	void assignSymb(char symb) throws RemoteException;
+	void receiveWinner(String username) throws RemoteException;
+	void receiveDraw() throws RemoteException;;
 }
