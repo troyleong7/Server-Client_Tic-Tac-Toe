@@ -71,10 +71,16 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		Random random = new Random();
         int randomNumber = random.nextInt(2);
         if(randomNumber == 0) {
-        	client1.startMove();
+        	client1.assignSymb('X');
+        	client2.assignSymb('O');
+        	client1.startMove(true);
+        	client2.startMove(false);
         }
         else {
-        	client2.startMove();
+        	client2.assignSymb('X');
+        	client1.assignSymb('O');
+        	client2.startMove(true);
+        	client1.startMove(false);
         }
 	}
 
@@ -110,7 +116,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
         }
 
         ClientGUI.announceWinner("It's a draw \n");
-        return false;
+        return true;
     }
 
 	@Override
@@ -118,8 +124,9 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		for (ClientFunction client: activeClients) {
 			try {
 				if(client.getUsername().equals(username)) {
-					System.out.println("success2");
 					client.getPartner().receiveBoardState(board);
+					client.startMove(false);
+					client.getPartner().startMove(true);
 				}
 			} catch (RemoteException e) {
 				e.printStackTrace();

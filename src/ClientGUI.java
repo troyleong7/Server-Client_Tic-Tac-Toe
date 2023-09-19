@@ -32,6 +32,7 @@ public class ClientGUI extends JFrame {
 	private static JLabel turnLabel;
 	private static TicTacToe tictactoe;
 	public boolean turn = false;
+	private String partner;
 	String username;
 	Service server;
 	
@@ -63,7 +64,6 @@ public class ClientGUI extends JFrame {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		System.out.println(username);
 		setBounds(100, 100, 670, 428);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
@@ -144,26 +144,32 @@ public class ClientGUI extends JFrame {
 	public void startTimer() {
 		countdown = 20;
 		timerPane.setFont(new Font("Tahoma", Font.PLAIN, 30));
+		updateTimerDisplay();
         timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 countdown--;
                 updateTimerDisplay();
-                if (countdown == 0) {
+                if (countdown <= 0) {
                     timer.stop();
                 }
             }
         });
         
-        updateTimerDisplay();
         timer.start();
 	}
 	
 	private static void updateTimerDisplay() {
         int seconds = countdown % 60;
-
-        String timeString = String.format("%02d", seconds);
-        timerPane.setText("Timer: \n" + timeString);
+        
+        if(countdown <=0) {
+        	timerPane.setFont(new Font("Tahoma", Font.PLAIN, 20));
+    		timerPane.setText("Waiting for player turn");
+        }
+        else {
+        	String timeString = String.format("%02d", seconds);
+        	timerPane.setText("Timer: \n" + timeString);
+        }
     }
 	
 	public static void announceWinner(String announcement) {
@@ -171,7 +177,6 @@ public class ClientGUI extends JFrame {
 	}
 
 	public void playerFound() {
-		startTimer();
 	}
 	
 	public void showMessage(String username, String message) {
@@ -181,11 +186,34 @@ public class ClientGUI extends JFrame {
 	public void turn(boolean nextTurn) {
 		turn = nextTurn;
 		tictactoe.setTurn(nextTurn);
+		if(turn) {
+			turnLabel.setText(username + "'s turn (" + tictactoe.currentPlayer + ")");
+			startTimer();
+		}
+		else {
+			char partnerSymb;
+			countdown = 0;
+			if(tictactoe.currentPlayer == 'O') {
+				partnerSymb = 'X';
+			}
+			else {
+				partnerSymb = 'O';
+			}
+			turnLabel.setText(partner + "'s turn (" + partnerSymb + ")");
+		}
 	}
 	
+	public void getPartner(String partner) {
+		this.partner = partner;
+	}
 	
 	public void updateBoard(char[][] board) {
 		tictactoe.board = board;
 		tictactoe.displayBoard(board);
 	}
+
+	public void getSymbol(char symb) {
+		tictactoe.currentPlayer = symb;
+	}
+	
 }

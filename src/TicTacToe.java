@@ -11,7 +11,7 @@ public class TicTacToe extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	// Create a 2D array to represent the game board
     public char[][] board = new char[3][3];
-    public char currentPlayer = 'O'; // Player O starts
+    public char currentPlayer; 
     public JButton[][] buttons = new JButton[3][3];
     private boolean yourTurn;
     private boolean isGameOver;
@@ -86,9 +86,6 @@ public class TicTacToe extends JPanel implements ActionListener {
             // Check if the game is over
             if (isGameOver) {
             	ClientGUI.announceWinner("Player " + currentPlayer + " wins! \n");
-            } else {
-                // Switch to the other player
-                currentPlayer = (currentPlayer == 'O') ? 'X' : 'O';
             }
         }
     }
@@ -106,7 +103,9 @@ public class TicTacToe extends JPanel implements ActionListener {
     	for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 board[i][j] = newBoard[i][j];
-                buttons[i][j].setText(String.valueOf(board[i][j]));
+                if(board[i][j] != ' ')  {
+                	buttons[i][j].setText(String.valueOf(board[i][j]));
+                }
             }
     	}
     }
