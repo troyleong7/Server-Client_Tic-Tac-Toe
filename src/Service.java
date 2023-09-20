@@ -31,6 +31,8 @@ public interface Service extends Remote {
 	
 	void forfeitGame(String username) throws RemoteException;
 
-	void newGame(String username) throws RemoteException;;
+	void newGame(String username) throws RemoteException;
+
+	void informPartner(String username) throws RemoteException;
  
 }

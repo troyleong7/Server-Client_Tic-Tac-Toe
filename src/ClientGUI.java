@@ -49,25 +49,27 @@ public class ClientGUI extends JFrame {
 		initialize();
 		
 		messageField.addActionListener(new ActionListener() {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	    	chatLog.updateChat(username + " : " + messageField.getText());
-	    	try {
-	    		server.sendMessage(username, messageField.getText());
-	    		messageField.setText("");
-	    	} catch (RemoteException e1) {
-	    		System.out.println("no");
-			}
-	    }
-		});
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+		    	if(partner != null) {
+			    	chatLog.updateChat(username + " : " + messageField.getText());
+			    	try {
+			    		server.sendMessage(username, messageField.getText());
+			    		messageField.setText("");
+			    	} catch (RemoteException e1) {
+			    		System.out.println("removed");;
+					}
+		    	}
+		    }
+			});
 		
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					if(!tictactoe.isGameOver) {
+	            	if(!tictactoe.isGameOver && !(partner == null)) {
 						server.forfeitGame(username);
 					}
-					server.unregister(username);
+	            	server.unregister(username);
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
 				}
@@ -78,7 +80,7 @@ public class ClientGUI extends JFrame {
 		addWindowListener(new WindowAdapter() {
 	        public void windowClosing(WindowEvent e) {
 	            try {
-	            	if(!tictactoe.isGameOver) {
+	            	if(!tictactoe.isGameOver  && !(partner == null)) {
 						server.forfeitGame(username);
 					}
 	            	server.unregister(username);
@@ -87,6 +89,21 @@ public class ClientGUI extends JFrame {
 				}
 	        }
 	    });
+		
+		timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	countdown--;
+            	updateTimerDisplay();
+                if (countdown < 0) {
+                    timer.stop();
+                }
+                else if (countdown == 0) {
+                    timer.stop();
+                    tictactoe.playRandomMove();
+                }
+            }
+        });
 		
 	}
 
@@ -168,21 +185,6 @@ public class ClientGUI extends JFrame {
 		countdown = 20;
 		timerPane.setFont(new Font("Tahoma", Font.PLAIN, 30));
 		updateTimerDisplay();
-        timer = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            	countdown--;
-            	updateTimerDisplay();
-                if (countdown < 0) {
-                    timer.stop();
-                }
-                else if (countdown == 0) {
-                    timer.stop();
-                    tictactoe.playRandomMove();
-                }
-            }
-        });
-        
         timer.start();
 	}
 	
@@ -291,6 +293,7 @@ public class ClientGUI extends JFrame {
 		qButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
+					server.informPartner(username);
 					server.unregister(username);
 				} catch (RemoteException e1) {
 					System.out.println("removed");;

@@ -40,7 +40,12 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	@Override
 	public void setPartner(ClientFunction partner) throws RemoteException {
 		this.partner = partner;
-		GUI.getPartner(partner.getUsername());
+		if(partner != null) {
+			GUI.getPartner(partner.getUsername());
+		}
+		else {
+			GUI.getPartner(null);
+		}
 	}
 
 	@Override
@@ -77,10 +82,13 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	@Override
 	public void receiveDraw() throws RemoteException {
 		GUI.announceDraw();
+		GUI.showOption();
 	}
 	
 	@Override
 	public void newGame() throws RemoteException {
+		this.partner = null;
+		GUI.getPartner(null);
 		GUI.resetGUI();
 	}
 	

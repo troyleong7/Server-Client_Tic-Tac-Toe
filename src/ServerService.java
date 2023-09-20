@@ -40,6 +40,9 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			if(activeClients.get(i).getUsername().equals(username)) {
 				ClientFunction removeClient = activeClients.get(i);
 				activeClients.remove(removeClient);
+				if(waitingClients.peek() == removeClient) {
+					waitingClients.remove(removeClient);
+				}
 				break;
 			}
 		}
@@ -181,9 +184,12 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			try {
 				if(client.getUsername().equals(username)) {
 					client.startMove(false);
-					client.getPartner().startMove(false);
-					client.getPartner().receiveWinner(client.getPartner().getUsername());
-					client.receiveWinner(client.getPartner().getUsername());
+					if(client.getPartner() != null) {
+						informPartner(username);
+						client.receiveWinner(client.getPartner().getUsername());
+						client.getPartner().startMove(false);
+						client.getPartner().receiveWinner(client.getPartner().getUsername());
+					}
 				}
 			} catch (RemoteException e) {
 				e.printStackTrace();
@@ -196,10 +202,24 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		for (int i = 0; i < activeClients.size(); i++){
 			if(activeClients.get(i).getUsername().equals(username)) {
 				ClientFunction renewClient = activeClients.get(i);
+				informPartner(username);
 				renewClient.newGame();
 				unregister(username);
 				registerClient(renewClient);
 				break;
+			}
+		}
+	}
+	
+	public void informPartner(String username) throws RemoteException {
+		for (int i = 0; i < activeClients.size(); i++){
+			if(activeClients.get(i).getUsername().equals(username)) {
+				ClientFunction partner = activeClients.get(i).getPartner();
+				if(partner != null) {
+					partner.receiveMessage("Disconnected!");
+					partner.setPartner(null);
+					break;
+				}
 			}
 		}
 	}
