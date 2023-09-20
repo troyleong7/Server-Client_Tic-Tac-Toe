@@ -8,13 +8,14 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.JTextField;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import java.awt.Font;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
 
 public class ClientGUI extends JFrame {
@@ -27,7 +28,7 @@ public class ClientGUI extends JFrame {
 	private static Timer timer;
 	private static int countdown;
 	private static JTextPane timerPane;
-	private static JTextArea chatLog;
+	private static ChatLog chatLog;
 	private static JTextField messageField;
 	private static JLabel turnLabel;
 	private static TicTacToe tictactoe;
@@ -48,7 +49,7 @@ public class ClientGUI extends JFrame {
 		messageField.addActionListener(new ActionListener() {
 	    @Override
 	    public void actionPerformed(ActionEvent e) {
-	    	chatLog.append(username + " : " + messageField.getText() + "\n");
+	    	chatLog.updateChat(username + " : " + messageField.getText());
 	    	try {
 	    		server.sendMessage(username, messageField.getText());
 	    		messageField.setText("");
@@ -57,6 +58,17 @@ public class ClientGUI extends JFrame {
 			}
 	    }
 		});
+		
+		addWindowListener(new WindowAdapter() {
+	        public void windowClosing(WindowEvent e) {
+	            try {
+					server.unregister(username);
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+	        }
+	    });
 		
 	}
 
@@ -83,6 +95,12 @@ public class ClientGUI extends JFrame {
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
+				try {
+					server.unregister(username);
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		});
 		getContentPane().add(quitButton);
@@ -91,9 +109,7 @@ public class ClientGUI extends JFrame {
 		scrollPane.setBounds(448, 34, 196, 312);
 		getContentPane().add(scrollPane);
 		
-		chatLog = new JTextArea();
-		chatLog.setLineWrap(true);
-		chatLog.setEditable(false);
+		chatLog = new ChatLog();
 		scrollPane.setViewportView(chatLog);
 		
 		messageField = new JTextField();
@@ -179,17 +195,16 @@ public class ClientGUI extends JFrame {
         }
     }
 	
+	
 	public void announceWinner(String winner) {
 		turnLabel.setText("Player " + winner + " wins!");
 		tictactoe.GameOver();
 		updateTimerDisplay();
 	}
 
-	public void playerFound() {
-	}
 	
 	public void showMessage(String username, String message) {
-		chatLog.append(username + " : " + message + "\n");
+		chatLog.updateChat(username + " : " + message);
 	}
 	
 	public void turn(boolean nextTurn) {

@@ -15,8 +15,6 @@ public interface Service extends Remote {
 
 	void registerClient(ClientFunction client) throws RemoteException;
 
-	void unregister(ClientFunction client) throws RemoteException;
-
 	void sendMessage(String username, String message) throws RemoteException;
 	
 	void randomAssign(ClientFunction client1, ClientFunction client2) throws RemoteException;
@@ -28,5 +26,7 @@ public interface Service extends Remote {
 	void announceWinner(String username, char[][] board) throws RemoteException;
 
 	void drawGame(String username, char[][] board) throws RemoteException;
+
+	void unregister(String username) throws RemoteException;
  
 }

@@ -35,8 +35,16 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	}
 	
 	@Override
-    public synchronized void unregister(ClientFunction client) throws RemoteException {
-        activeClients.remove(client);
+    public synchronized void unregister(String username) throws RemoteException {
+		for (ClientFunction client: activeClients) {
+			try {
+				if(client.getUsername().equals(username)) {
+					activeClients.remove(client);
+				}
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
     }
 
 
