@@ -91,6 +91,12 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		GUI.getPartner(null);
 		GUI.resetGUI();
 	}
+
+
+	@Override
+	public void serverCrash() throws RemoteException {
+		GUI.serverCrash();
+	}
 	
 
 }

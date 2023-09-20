@@ -19,9 +19,18 @@ public class Client {
 			username = args[0];
 			Registry registry = LocateRegistry.getRegistry("localhost");
 			Service server = (Service) registry.lookup("Server");
+			System.out.println("Connected to server ");
 			ClientFunction client = new ClientService(server, username);
 			
-			System.out.println("Connected to server ");
+			while(true) {
+				try {
+	                server.crashNotify();
+	                Thread.sleep(1000);
+	            } catch (Exception e) {
+	               	client.serverCrash();
+	               	break;
+	            }
+			}
 			
 		}catch(Exception e) {
 			e.printStackTrace();

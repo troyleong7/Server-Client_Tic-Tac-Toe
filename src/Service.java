@@ -34,5 +34,7 @@ public interface Service extends Remote {
 	void newGame(String username) throws RemoteException;
 
 	void informPartner(String username) throws RemoteException;
+
+	int crashNotify() throws RemoteException;
  
 }

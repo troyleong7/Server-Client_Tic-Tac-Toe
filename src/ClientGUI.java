@@ -26,7 +26,9 @@ public class ClientGUI extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 	private static Timer timer;
+	private static Timer crashTimer;
 	private static int countdown;
+	private static int crashCount;
 	private static JTextPane timerPane;
 	private static ChatLog chatLog;
 	private static JTextField messageField;
@@ -311,6 +313,37 @@ public class ClientGUI extends JFrame {
 		chatLog.resetChat();
 		timerPane.setText("Finding player");
 		turnLabel.setText("");
+	}
+
+	public void serverCrash() {
+		JFrame crashFrame = new JFrame();
+		crashCount = 5;
+		crashFrame.setResizable(false);
+		int x = this.getBounds().x  + (this.getBounds().width - 305)/2;
+		int y = this.getBounds().y  + (this.getBounds().height - 130)/2;
+		crashFrame.setBounds(x, y, 305, 130);
+		crashFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		crashFrame.getContentPane().setLayout(null);
+		
+		JLabel crashLabel = new JLabel("Server Crashed! Client closing in 5");
+		crashLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		crashLabel.setBounds(10, 30, 268, 21);
+		crashFrame.getContentPane().add(crashLabel);
+		
+		crashTimer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	crashCount--;
+            	crashLabel.setText("Server Crashed! Client closing in " + crashCount);
+                if (crashCount == 0) {
+                    crashTimer.stop();
+                    System.exit(0);
+                }
+            }
+        });
+		
+		crashTimer.start();
+		crashFrame.setVisible(true);
 	}
 	
 }

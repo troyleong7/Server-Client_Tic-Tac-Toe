@@ -21,6 +21,10 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		activeClients = new ArrayList<>();
         waitingClients = new ConcurrentLinkedQueue<>();
 	}
+	
+	public int crashNotify() throws RemoteException{
+        return 1;
+    }
 
 	@Override
 	public synchronized void registerClient(ClientFunction client) throws RemoteException {
