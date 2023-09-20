@@ -11,5 +11,6 @@ public interface ClientFunction extends Remote{
 	void receiveBoardState(char[][] board) throws RemoteException;
 	void assignSymb(char symb) throws RemoteException;
 	void receiveWinner(String username) throws RemoteException;
-	void receiveDraw() throws RemoteException;;
+	void receiveDraw() throws RemoteException;
+	void newGame() throws RemoteException;;
 }

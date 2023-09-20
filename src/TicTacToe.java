@@ -155,11 +155,22 @@ public class TicTacToe extends JPanel implements ActionListener {
         }
 		Random random = new Random();
         int randomIndex = random.nextInt(availableMove.size());
-        System.out.println(availableMove);
 		row = availableMove.get(randomIndex).get(0);
 		col = availableMove.get(randomIndex).get(1);
 		buttons[row][col].setText(String.valueOf(currentPlayer));
 		board[row][col] = currentPlayer;
 		afterAction();
+	}
+	
+	public void resetBoard(){
+		for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                board[i][j] = ' ';
+                buttons[i][j].setText("");
+            }
+        }
+		yourTurn = false;
+        isGameOver = false;
+        isDraw = false;
 	}
 }

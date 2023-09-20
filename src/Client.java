@@ -19,8 +19,7 @@ public class Client {
 			username = args[0];
 			Registry registry = LocateRegistry.getRegistry("localhost");
 			Service server = (Service) registry.lookup("Server");
-			ClientGUI GUI = new ClientGUI(username, server);
-			ClientFunction client = new ClientService(server, username, GUI);
+			ClientFunction client = new ClientService(server, username);
 			
 			System.out.println("Connected to server ");
 			

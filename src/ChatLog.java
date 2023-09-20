@@ -135,4 +135,17 @@ public class ChatLog extends JPanel{
 		textArea0.setText(message);
 	}
 
+	public void resetChat() {
+		textArea9.setText("");
+		textArea8.setText("");
+		textArea7.setText("");
+		textArea6.setText("");
+		textArea5.setText("");
+		textArea4.setText("");
+		textArea3.setText("");
+		textArea2.setText("");
+		textArea1.setText("");
+		textArea0.setText("");
+	}
+
 }

@@ -28,5 +28,9 @@ public interface Service extends Remote {
 	void drawGame(String username, char[][] board) throws RemoteException;
 
 	void unregister(String username) throws RemoteException;
+	
+	void forfeitGame(String username) throws RemoteException;
+
+	void newGame(String username) throws RemoteException;;
  
 }

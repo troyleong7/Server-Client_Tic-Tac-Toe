@@ -13,10 +13,10 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	public ClientFunction partner;
 	public boolean yourTurn;
 	
-	protected ClientService(Service server, String username, ClientGUI GUI) throws RemoteException {
+	protected ClientService(Service server, String username) throws RemoteException {
 		this.server = server;
 		this.username = username;
-		this.GUI = GUI;
+		GUI = new ClientGUI(username, server);
 		server.registerClient(this);
 	}
 	
@@ -70,13 +70,18 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	@Override
 	public void receiveWinner(String username) throws RemoteException {
 		GUI.announceWinner(username);
-		
+		GUI.showOption();
 	}
 
 
 	@Override
 	public void receiveDraw() throws RemoteException {
 		GUI.announceDraw();
+	}
+	
+	@Override
+	public void newGame() throws RemoteException {
+		GUI.resetGUI();
 	}
 	
 

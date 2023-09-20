@@ -32,7 +32,8 @@ public class ClientGUI extends JFrame {
 	private static JTextField messageField;
 	private static JLabel turnLabel;
 	private static TicTacToe tictactoe;
-	public boolean turn = false;
+	private static JButton quitButton;
+	public boolean turn;
 	private String partner;
 	String username;
 	Service server;
@@ -44,6 +45,7 @@ public class ClientGUI extends JFrame {
 	public ClientGUI(String username, Service server) throws RemoteException{
 		this.server = server;
 		this.username = username;
+		turn = false;
 		initialize();
 		
 		messageField.addActionListener(new ActionListener() {
@@ -59,12 +61,28 @@ public class ClientGUI extends JFrame {
 	    }
 		});
 		
+		quitButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					if(!tictactoe.isGameOver) {
+						server.forfeitGame(username);
+					}
+					server.unregister(username);
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
+				System.exit(0);
+			}
+		});
+		
 		addWindowListener(new WindowAdapter() {
 	        public void windowClosing(WindowEvent e) {
 	            try {
-					server.unregister(username);
+	            	if(!tictactoe.isGameOver) {
+						server.forfeitGame(username);
+					}
+	            	server.unregister(username);
 				} catch (RemoteException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 	        }
@@ -89,20 +107,9 @@ public class ClientGUI extends JFrame {
 		gameLabel.setBounds(10, 189, 105, 59);
 		getContentPane().add(gameLabel);
 		
-		JButton quitButton = new JButton("QUIT");
+		quitButton = new JButton("QUIT");
 		quitButton.setFont(new Font("Tahoma", Font.BOLD, 11));
 		quitButton.setBounds(10, 285, 105, 23);
-		quitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				System.exit(0);
-				try {
-					server.unregister(username);
-				} catch (RemoteException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
 		getContentPane().add(quitButton);
 		
 		JScrollPane scrollPane = new JScrollPane();
@@ -135,7 +142,7 @@ public class ClientGUI extends JFrame {
 		getContentPane().add(timerPane);
 		
 		timerPane.setFont(new Font("Tahoma", Font.PLAIN, 25));
-		timerPane.setText("Waiting for player");
+		timerPane.setText("Finding player");
 		
 		turnLabel = new JLabel("");
 		turnLabel.setOpaque(true);
@@ -245,6 +252,62 @@ public class ClientGUI extends JFrame {
 		turnLabel.setText("Match drawn");
 		tictactoe.GameOver();
 		updateTimerDisplay();
+	}
+	
+	public void showOption() {
+		JFrame frame = new JFrame();
+		frame.setResizable(false);
+		int x = this.getBounds().x  + (this.getBounds().width - 305)/2;
+		int y = this.getBounds().y  + (this.getBounds().height - 130)/2;
+		frame.setBounds(x, y, 305, 130);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(null);
+		
+		JLabel optionLabel = new JLabel("Would you want to find a new game or quit?");
+		optionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		optionLabel.setBounds(10, 11, 268, 21);
+		frame.getContentPane().add(optionLabel);
+		
+		JButton newButton = new JButton("New Game");
+		newButton.setBounds(44, 43, 89, 23);
+		frame.getContentPane().add(newButton);
+		
+		JButton qButton = new JButton("Quit");
+		qButton.setBounds(143, 43, 89, 23);
+		frame.getContentPane().add(qButton);
+		
+		newButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frame.setVisible(false);
+				try {
+					server.newGame(username);
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		
+		qButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					server.unregister(username);
+				} catch (RemoteException e1) {
+					System.out.println("removed");;
+				}
+				System.exit(0);
+			}
+		});
+		
+		
+		frame.setVisible(true);
+	}
+
+	public void resetGUI() {
+		tictactoe.resetBoard();
+		chatLog.resetChat();
+		timerPane.setText("Finding player");
+		turnLabel.setText("");
 	}
 	
 }

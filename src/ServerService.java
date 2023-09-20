@@ -36,13 +36,11 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	
 	@Override
     public synchronized void unregister(String username) throws RemoteException {
-		for (ClientFunction client: activeClients) {
-			try {
-				if(client.getUsername().equals(username)) {
-					activeClients.remove(client);
-				}
-			} catch (RemoteException e) {
-				e.printStackTrace();
+		for (int i = 0; i < activeClients.size(); i++){
+			if(activeClients.get(i).getUsername().equals(username)) {
+				ClientFunction removeClient = activeClients.get(i);
+				activeClients.remove(removeClient);
+				break;
 			}
 		}
     }
@@ -150,8 +148,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
 					client.getPartner().receiveBoardState(board);
 					client.startMove(false);
 					client.getPartner().startMove(false);
-					client.getPartner().receiveWinner(username);
 					client.receiveWinner(username);
+					client.getPartner().receiveWinner(username);
 				}
 			} catch (RemoteException e) {
 				e.printStackTrace();
@@ -173,6 +171,35 @@ public class ServerService extends UnicastRemoteObject implements Service {
 				}
 			} catch (RemoteException e) {
 				e.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void forfeitGame(String username) throws RemoteException {
+		for (ClientFunction client: activeClients) {
+			try {
+				if(client.getUsername().equals(username)) {
+					client.startMove(false);
+					client.getPartner().startMove(false);
+					client.getPartner().receiveWinner(client.getPartner().getUsername());
+					client.receiveWinner(client.getPartner().getUsername());
+				}
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void newGame(String username) throws RemoteException {
+		for (int i = 0; i < activeClients.size(); i++){
+			if(activeClients.get(i).getUsername().equals(username)) {
+				ClientFunction renewClient = activeClients.get(i);
+				renewClient.newGame();
+				unregister(username);
+				registerClient(renewClient);
+				break;
 			}
 		}
 	}
