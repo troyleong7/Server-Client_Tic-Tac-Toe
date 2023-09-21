@@ -294,11 +294,11 @@ public class ClientGUI extends JFrame {
 		frame.getContentPane().add(optionLabel);
 		
 		JButton newButton = new JButton("New Game");
-		newButton.setBounds(44, 43, 89, 23);
+		newButton.setBounds(40, 43, 95, 23);
 		frame.getContentPane().add(newButton);
 		
 		JButton qButton = new JButton("Quit");
-		qButton.setBounds(143, 43, 89, 23);
+		qButton.setBounds(145, 43, 95, 23);
 		frame.getContentPane().add(qButton);
 		
 		newButton.addActionListener(new ActionListener() {
@@ -330,6 +330,7 @@ public class ClientGUI extends JFrame {
 	}
 
 	public void resetGUI() {
+		wait = false;
 		tictactoe.resetBoard();
 		chatLog.resetChat();
 		timerPane.setText("Finding player");
@@ -403,6 +404,7 @@ public class ClientGUI extends JFrame {
 	                    waitTimer.stop();
 	                    try {
 							server.drawGame(client, tictactoe.board);
+							server.removeWaiting(partner);
 							waitFrame.dispose();
 						} catch (RemoteException e1) {
 							System.out.println("error in ClientGUI drawGame");

@@ -365,6 +365,11 @@ public class ServerService extends UnicastRemoteObject implements Service {
         
         return sortedHashMap;
 	}
+
+	@Override
+	public void removeWaiting(String partner) throws RemoteException {
+		disconnectedClients.remove(partner);
+	}
 	
 	
 }
