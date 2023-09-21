@@ -15,25 +15,25 @@ public interface Service extends Remote {
 
 	void registerClient(ClientFunction client) throws RemoteException;
 
-	void sendMessage(String username, String message) throws RemoteException;
+	void sendMessage(ClientFunction client, String message) throws RemoteException;
 	
 	void randomAssign(ClientFunction client1, ClientFunction client2) throws RemoteException;
 	
 	int isGameOver(TicTacToe tictactoe) throws RemoteException;
 
-	void sendBoardState(String username, char[][] board) throws RemoteException;
+	void sendBoardState(ClientFunction client, char[][] board) throws RemoteException;
 
-	void announceWinner(String username, char[][] board) throws RemoteException;
+	void announceWinner(ClientFunction client, char[][] board) throws RemoteException;
 
-	void drawGame(String username, char[][] board) throws RemoteException;
+	void drawGame(ClientFunction client, char[][] board) throws RemoteException;
 
-	void unregister(String username) throws RemoteException;
+	void unregister(ClientFunction client) throws RemoteException;
 	
-	void forfeitGame(String username) throws RemoteException;
+	void forfeitGame(ClientFunction client) throws RemoteException;
 
-	void newGame(String username) throws RemoteException;
+	void newGame(ClientFunction client) throws RemoteException;
 
-	void informPartner(String username) throws RemoteException;
+	void informPartner(ClientFunction newClient) throws RemoteException;
 
 	int crashNotify() throws RemoteException;
 

@@ -27,8 +27,10 @@ public class ClientGUI extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private static Timer timer;
 	private static Timer crashTimer;
+	private static Timer waitTimer;
 	private static int countdown;
 	private static int crashCount;
+	private static int waitCount;
 	private static JTextPane timerPane;
 	private static ChatLog chatLog;
 	private static JTextField messageField;
@@ -36,29 +38,32 @@ public class ClientGUI extends JFrame {
 	private static TicTacToe tictactoe;
 	private static JButton quitButton;
 	public boolean turn;
+	public boolean wait;
 	private String partner;
 	private int ranking;
 	private int partnerRanking;
 	String username;
 	Service server;
-	
+	ClientFunction client;
 	/**
 	 * Create the application.
 	 * @throws RemoteException 
 	 */
-	public ClientGUI(String username, Service server) throws RemoteException{
+	public ClientGUI(ClientFunction client, String username, Service server) throws RemoteException{
+		this.client = client;
 		this.server = server;
 		this.username = username;
 		turn = false;
+		wait = false;
 		initialize();
 		
 		messageField.addActionListener(new ActionListener() {
 		    @Override
 		    public void actionPerformed(ActionEvent e) {
-		    	if(partner != null) {
+		    	if(partner != null && !wait) {
 			    	chatLog.updateChat("Rank#" + ranking + " " + username + " : " + messageField.getText());
 			    	try {
-			    		server.sendMessage(username, messageField.getText());
+			    		server.sendMessage(client, messageField.getText());
 			    		messageField.setText("");
 			    	} catch (RemoteException e1) {
 			    		System.out.println("removed");;
@@ -71,14 +76,14 @@ public class ClientGUI extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 	            	if(!tictactoe.isGameOver && !(partner == null)) {
-						server.forfeitGame(username);
+						server.forfeitGame(client);
 					}
 	            	else {
-	            		server.informPartner(username);
+	            		server.informPartner(client);
 	            	}
-	            	server.unregister(username);
+	            	server.unregister(client);
 				} catch (RemoteException e1) {
-					e1.printStackTrace();
+					System.out.println("error at quit button");;
 				}
 				System.exit(0);
 			}
@@ -88,12 +93,12 @@ public class ClientGUI extends JFrame {
 	        public void windowClosing(WindowEvent e) {
 	            try {
 	            	if(!tictactoe.isGameOver  && !(partner == null)) {
-						server.forfeitGame(username);
+						server.forfeitGame(client);
 					}
 	            	else {
-	            		server.informPartner(username);
+	            		server.informPartner(client);
 	            	}
-	            	server.unregister(username);
+	            	server.unregister(client);
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
 				}
@@ -179,7 +184,7 @@ public class ClientGUI extends JFrame {
 		turnLabel.setBounds(137, 33, 301, 34);
 		getContentPane().add(turnLabel);
 		
-		tictactoe = new TicTacToe(server, username);
+		tictactoe = new TicTacToe(server, client);
 		tictactoe.setBounds(10, 11, 280, 278);
 		JPanel panel = new JPanel();
 		panel.setBounds(138, 67, 300, 300);
@@ -299,7 +304,7 @@ public class ClientGUI extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				frame.setVisible(false);
 				try {
-					server.newGame(username);
+					server.newGame(client);
 				} catch (RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -310,8 +315,8 @@ public class ClientGUI extends JFrame {
 		qButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					server.informPartner(username);
-					server.unregister(username);
+					server.informPartner(client);
+					server.unregister(client);
 				} catch (RemoteException e1) {
 					System.out.println("removed");;
 				}
@@ -368,6 +373,43 @@ public class ClientGUI extends JFrame {
 	public void getPartnerRanking(int rank) {
 		this.partnerRanking = rank;
 		
+	}
+
+	public void waitReconnect() {
+		wait = true;
+		JFrame waitFrame = new JFrame();
+		waitCount = 30;
+		waitFrame.setResizable(false);
+		int x = this.getBounds().x  + (this.getBounds().width - 305)/2;
+		int y = this.getBounds().y  + (this.getBounds().height - 130)/2;
+		waitFrame.setBounds(x, y, 305, 130);
+		waitFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		waitFrame.getContentPane().setLayout(null);
+		
+		JLabel waitLabel = new JLabel("Opponent Disconnected! Waiting reconnect: 30");
+		waitLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		waitLabel.setBounds(10, 30, 268, 21);
+		waitFrame.getContentPane().add(waitLabel);
+		
+		waitTimer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	waitCount--;
+            	waitLabel.setText("Opponent Disconnected! Waiting reconnect: " + waitCount);
+                if (waitCount == 0) {
+                    waitTimer.stop();
+                    try {
+						server.drawGame(client, tictactoe.board);
+						waitFrame.dispose();
+					} catch (RemoteException e1) {
+						e1.printStackTrace();
+					}
+                }
+            }
+        });
+		
+		waitTimer.start();
+		waitFrame.setVisible(true);
 	}
 	
 }

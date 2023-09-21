@@ -3,6 +3,7 @@ import java.rmi.RemoteException;
 
 public interface ClientFunction extends Remote{
 	String getUsername() throws RemoteException;
+	String getPartnerName() throws RemoteException;
     void receiveMessage(String message) throws RemoteException;
     ClientFunction getPartner() throws RemoteException;
     void setPartner(ClientFunction partner) throws RemoteException;
@@ -18,4 +19,5 @@ public interface ClientFunction extends Remote{
 	int getPoint() throws RemoteException;
 	void setRanking(int rank) throws RemoteException;
 	void setPartnerRanking(int rank) throws RemoteException;
+	void waitReconnect() throws RemoteException;
 }

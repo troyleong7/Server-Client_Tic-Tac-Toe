@@ -20,11 +20,11 @@ public class TicTacToe extends JPanel implements ActionListener {
     public boolean isGameOver;
     public boolean isDraw;
     private Service server;
-    private String username;
+    private ClientFunction client;
 
-    public TicTacToe(Service server, String username) {
+    public TicTacToe(Service server, ClientFunction client) {
         // Initialize the game board and set up the GUI
-    	this.username = username;
+    	this.client = client;
     	this.server = server;
         initializeBoard();
         initializeGUI();
@@ -102,20 +102,20 @@ public class TicTacToe extends JPanel implements ActionListener {
 		}
         if (isGameOver && !isDraw) {
         	try {
-				server.announceWinner(username, board);
+				server.announceWinner(client, board);
 			} catch (RemoteException e1) {
 				e1.printStackTrace();
 			}
         }else if(isGameOver && isDraw) {
         	try {
-				server.drawGame(username, board);
+				server.drawGame(client, board);
 			} catch (RemoteException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
         }else {
             try {
-				server.sendBoardState(username, board);
+				server.sendBoardState(client, board);
 			} catch (RemoteException e1) {
 				e1.printStackTrace();
 			}
