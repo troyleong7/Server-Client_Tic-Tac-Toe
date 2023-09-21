@@ -2,7 +2,10 @@
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -15,12 +18,14 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private static LinkedHashMap<String, Integer> ranks;
 	private static Map<String, Integer> clients;
 	private List<ClientFunction> activeClients;
     private Queue<ClientFunction> waitingClients;
     
 	protected ServerService() throws RemoteException {
 		super();
+		ranks = new  LinkedHashMap<String, Integer>();
 		clients = new HashMap<String, Integer>();
 		activeClients = new ArrayList<>();
         waitingClients = new ConcurrentLinkedQueue<>();
@@ -64,6 +69,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
             waitingClients.add(client);
         } else {
         	ClientFunction partner = waitingClients.poll();
+        	sortRanking(clients);
             pair(client, partner);
         }
 		
@@ -102,8 +108,13 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	
 	private void pair(ClientFunction client1, ClientFunction client2) {
         try {
+        	ranks = sortRanking(clients);
             client1.setPartner(client2);
             client2.setPartner(client1);
+            client1.setRanking(ranks.get(client1.getUsername()));
+            client2.setRanking(ranks.get(client2.getUsername()));
+            client1.setPartnerRanking(ranks.get(client2.getUsername()));
+            client2.setPartnerRanking(ranks.get(client1.getUsername()));
             randomAssign(client1, client2);
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -192,6 +203,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
 					changeScore(client.getPartner().getUsername(), (-5));
 					client.receiveWinner(username);
 					client.getPartner().receiveWinner(username);
+					ranks = sortRanking(clients);
 				}
 			} catch (RemoteException e) {
 				e.printStackTrace();
@@ -208,8 +220,13 @@ public class ServerService extends UnicastRemoteObject implements Service {
 					client.getPartner().receiveBoardState(board);
 					client.startMove(false);
 					client.getPartner().startMove(false);
+					client.setPoint(client.getPoint()+ 2);
+					client.getPartner().setPoint(client.getPoint() + 2);
+					changeScore(client.getUsername(), 2);
+					changeScore(client.getPartner().getUsername(), 2);
 					client.getPartner().receiveDraw();
 					client.receiveDraw();
+					ranks = sortRanking(clients);
 				}
 			} catch (RemoteException e) {
 				e.printStackTrace();
@@ -232,6 +249,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
 						client.receiveWinner(client.getPartner().getUsername());
 						client.getPartner().startMove(false);
 						client.getPartner().receiveWinner(client.getPartner().getUsername());
+						ranks = sortRanking(clients);
 					}
 				}
 			} catch (RemoteException e) {
@@ -281,4 +299,29 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			clients.put(username, currentScore + score);
 		}
 	}
+	
+	private LinkedHashMap<String, Integer> sortRanking(Map<String, Integer> hm) {
+		List<Map.Entry<String, Integer>> list = new ArrayList<>(hm.entrySet());
+
+        // Define a custom Comparator to sort by values in reverse order
+        Comparator<Map.Entry<String, Integer>> valueComparator = (entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue());
+
+        // Sort the list based on the custom Comparator
+        Collections.sort(list, valueComparator);
+
+        // Create a new LinkedHashMap to store the sorted entries
+        LinkedHashMap<String, Integer> sortedHashMap = new LinkedHashMap<>();
+
+        // Iterate through the sorted list of entries and put them into the LinkedHashMap
+        int rank = 0;
+        for (Map.Entry<String, Integer> entry : list) {
+        	rank++;
+            sortedHashMap.put(entry.getKey(), rank);
+        }
+        
+        System.out.println(sortedHashMap);
+        return sortedHashMap;
+	}
+	
+	
 }

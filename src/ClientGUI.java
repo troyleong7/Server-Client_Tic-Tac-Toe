@@ -37,6 +37,8 @@ public class ClientGUI extends JFrame {
 	private static JButton quitButton;
 	public boolean turn;
 	private String partner;
+	private int ranking;
+	private int partnerRanking;
 	String username;
 	Service server;
 	
@@ -54,7 +56,7 @@ public class ClientGUI extends JFrame {
 		    @Override
 		    public void actionPerformed(ActionEvent e) {
 		    	if(partner != null) {
-			    	chatLog.updateChat(username + " : " + messageField.getText());
+			    	chatLog.updateChat("Rank#" + ranking + " " + username + " : " + messageField.getText());
 			    	try {
 			    		server.sendMessage(username, messageField.getText());
 			    		messageField.setText("");
@@ -215,21 +217,27 @@ public class ClientGUI extends JFrame {
 	
 	
 	public void announceWinner(String winner) {
-		turnLabel.setText("Player " + winner + " wins!");
+		int winRank = 0;
+		if(winner.equals(username)) {
+			winRank = ranking;
+		} else {
+			winRank = partnerRanking;
+		}
+		turnLabel.setText("Player Rank#" + winRank + " " + winner + " wins!");
 		tictactoe.GameOver();
 		updateTimerDisplay();
 	}
 
 	
 	public void showMessage(String username, String message) {
-		chatLog.updateChat(username + " : " + message);
+		chatLog.updateChat("Rank#" + partnerRanking + " " + username + " : " + message);
 	}
 	
 	public void turn(boolean nextTurn) {
 		turn = nextTurn;
 		tictactoe.setTurn(nextTurn);
 		if(turn) {
-			turnLabel.setText(username + "'s turn (" + tictactoe.currentPlayer + ")");
+			turnLabel.setText("Rank#" + ranking + " " + username + "'s turn (" + tictactoe.currentPlayer + ")");
 			startTimer();
 		}
 		else {
@@ -242,7 +250,7 @@ public class ClientGUI extends JFrame {
 			else {
 				partnerSymb = 'O';
 			}
-			turnLabel.setText(partner + "'s turn (" + partnerSymb + ")");
+			turnLabel.setText("Rank#" + partnerRanking + " " + partner + "'s turn (" + partnerSymb + ")");
 		}
 	}
 	
@@ -351,6 +359,15 @@ public class ClientGUI extends JFrame {
 		
 		crashTimer.start();
 		crashFrame.setVisible(true);
+	}
+
+	public void getRanking(int rank) {
+		this.ranking = rank;
+	}
+
+	public void getPartnerRanking(int rank) {
+		this.partnerRanking = rank;
+		
 	}
 	
 }

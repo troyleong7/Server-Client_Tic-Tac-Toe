@@ -16,4 +16,6 @@ public interface ClientFunction extends Remote{
 	void serverCrash() throws RemoteException;
 	void setPoint(int point) throws RemoteException;
 	int getPoint() throws RemoteException;
+	void setRanking(int rank) throws RemoteException;
+	void setPartnerRanking(int rank) throws RemoteException;
 }

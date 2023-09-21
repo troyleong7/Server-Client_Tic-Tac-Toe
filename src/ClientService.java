@@ -13,6 +13,8 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	public ClientFunction partner;
 	public boolean yourTurn;
 	public int points;
+	public int ranking;
+	public int partnerRanking;
 	
 	protected ClientService(Service server, String username) throws RemoteException {
 		this.server = server;
@@ -113,5 +115,14 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	public int getPoint() throws RemoteException {
 		return points;
 	}
-
+	
+	public void setRanking(int rank) throws RemoteException {
+		this.ranking = rank;
+		GUI.getRanking(rank);
+	}
+	
+	public void setPartnerRanking(int rank) throws RemoteException {
+		this.partnerRanking = rank;
+		GUI.getPartnerRanking(rank);
+	}
 }
