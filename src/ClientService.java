@@ -23,7 +23,6 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		server.logIn(this);
 		GUI = new ClientGUI(this, username, server);
 		server.registerClient(this);
-		System.out.println(points);
 	}
 	
 	
@@ -35,6 +34,11 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	@Override
 	public String getPartnerName() throws RemoteException {
 		return partnerName;
+	}
+	
+	@Override
+	public boolean getTurn() throws RemoteException {
+		return yourTurn;
 	}
 
 
@@ -69,6 +73,7 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	@Override
 	public void startMove(boolean move) throws RemoteException {
 		GUI.turn(move);
+		this.yourTurn = move;
 	}
 
 
@@ -135,7 +140,14 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 
 
 	@Override
-	public void waitReconnect() throws RemoteException {
-		GUI.waitReconnect();
+	public void waitReconnect(boolean turn) throws RemoteException {
+		GUI.waitReconnect(turn);
+	}
+
+
+	@Override
+	public void receiveReconnect() throws RemoteException {
+		GUI.receiveReconnect();
+		
 	}
 }

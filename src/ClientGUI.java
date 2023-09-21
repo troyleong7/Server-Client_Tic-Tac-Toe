@@ -38,6 +38,7 @@ public class ClientGUI extends JFrame {
 	private static TicTacToe tictactoe;
 	private static JButton quitButton;
 	public boolean turn;
+	public boolean disTurn;
 	public boolean wait;
 	private String partner;
 	private int ranking;
@@ -375,7 +376,8 @@ public class ClientGUI extends JFrame {
 		
 	}
 
-	public void waitReconnect() {
+	public void waitReconnect(boolean isTurn) {
+		disTurn = isTurn;
 		wait = true;
 		JFrame waitFrame = new JFrame();
 		waitCount = 30;
@@ -395,21 +397,36 @@ public class ClientGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
             	waitCount--;
-            	waitLabel.setText("Opponent Disconnected! Waiting reconnect: " + waitCount);
-                if (waitCount == 0) {
-                    waitTimer.stop();
-                    try {
-						server.drawGame(client, tictactoe.board);
-						waitFrame.dispose();
+            	if(wait) {
+	            	waitLabel.setText("Opponent Disconnected! Waiting reconnect: " + waitCount);
+	                if (waitCount == 0) {
+	                    waitTimer.stop();
+	                    try {
+							server.drawGame(client, tictactoe.board);
+							waitFrame.dispose();
+						} catch (RemoteException e1) {
+							System.out.println("error in ClientGUI drawGame");
+						}
+	                }
+            	}
+            	else {
+            		waitTimer.stop();
+            		waitFrame.dispose();
+            		try {
+						server.reconnectBoardState(client, tictactoe.board, tictactoe.currentPlayer, disTurn);
 					} catch (RemoteException e1) {
-						e1.printStackTrace();
+						System.out.println("error in ClientGUI sendBoard to reconnect");
 					}
-                }
+            	}
             }
         });
 		
 		waitTimer.start();
 		waitFrame.setVisible(true);
+	}
+
+	public void receiveReconnect() {
+		wait = false;
 	}
 	
 }

@@ -38,5 +38,7 @@ public interface Service extends Remote {
 	int crashNotify() throws RemoteException;
 
 	void logIn(ClientFunction newClient) throws RemoteException;
+
+	void reconnectBoardState(ClientFunction client, char[][] board, char currentPlayer, boolean disTurn) throws RemoteException;
  
 }

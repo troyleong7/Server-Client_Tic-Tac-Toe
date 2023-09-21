@@ -20,6 +20,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	private static final long serialVersionUID = 1L;
 	private static LinkedHashMap<String, Integer> ranks;
 	private static Map<String, Integer> clients;
+	private List<String> disconnectedClients;
 	private List<ClientFunction> activeClients;
     private Queue<ClientFunction> waitingClients;
     
@@ -27,6 +28,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		super();
 		ranks = new  LinkedHashMap<String, Integer>();
 		clients = new HashMap<String, Integer>();
+		disconnectedClients = new ArrayList<>();
 		activeClients = new ArrayList<>();
         waitingClients = new ConcurrentLinkedQueue<>();
 	}
@@ -37,39 +39,68 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	
 	@Override
 	public synchronized void logIn(ClientFunction newClient) throws RemoteException {
+		String name = newClient.getUsername();
 		if (clients.isEmpty()){
 			newClient.setPoint(0);
-			int point = newClient.getPoint();
-			String name = newClient.getUsername();
-			clients.put(name, point);
+			clients.put(name, 0);
 		} 
 		else {
 			boolean old = false;
 			int oldPoints = 0;
 			for (String i : clients.keySet()){
-				if(i.equals(newClient.getUsername())) {
+				if(i.equals(name)) {
 					old = true;
 				}
 			}
 			if(old) {
-				oldPoints = clients.get(newClient.getUsername());
+				oldPoints = clients.get(name);
 				newClient.setPoint(oldPoints);
 			}
 			else {
-				String name = newClient.getUsername();
 				clients.put(name, 0);
 			}
 		}
 	}
+	private void reconnect(ClientFunction newClient) throws RemoteException {
+		for(ClientFunction partner : activeClients) {
+			if(partner.getPartnerName().equals(newClient.getUsername())) {
+				try {
+					ranks = sortRanking(clients);
+					partner.setPartner(newClient);
+					newClient.setPartner(partner);
+			        newClient.setRanking(ranks.get(newClient.getUsername()));
+			        partner.setRanking(ranks.get(partner.getUsername()));
+			        newClient.setPartnerRanking(ranks.get(partner.getUsername()));
+			        partner.setPartnerRanking(ranks.get(newClient.getUsername()));
+			        partner.receiveReconnect();
+				} catch (RemoteException e) {
+					unregister(partner);
+					unregister(newClient);
+					System.out.println("error in reconnecting dc client");
+				}
+			}
+		}
+		
+	}
+
 	@Override
 	public synchronized void registerClient(ClientFunction client) throws RemoteException {
-		activeClients.add(client);
-		if (waitingClients.isEmpty()) {
-            waitingClients.add(client);
-        } else {
-        	ClientFunction partner = waitingClients.poll();
-            pair(client, partner);
-        }
+		boolean dc;
+		dc = disconnectedClients.remove(client.getUsername());
+		if(dc) {
+			reconnect(client);
+			activeClients.add(client);
+		}
+		else {
+			activeClients.add(client);
+			if (waitingClients.isEmpty()) {
+	            waitingClients.add(client);
+	        } else {
+	        	ClientFunction partner = waitingClients.poll();
+	            pair(client, partner);
+	        }
+		}
+		
 		
 	}
 	
@@ -80,22 +111,6 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			waitingClients.remove(client);
 		}
 	}
-	
-	@Override
-	public void sendMessage(ClientFunction client, String message) throws RemoteException {
-			try {
-				client.getPartner().receiveMessage(message);
-			} catch (RemoteException e) {
-				unregister(client.getPartner());
-				client.startMove(false);
-				client.waitReconnect();
-				System.out.println("oh no client dead at send message");
-			}
-		}
-
-	
-
-	
 	
 	private void pair(ClientFunction client1, ClientFunction client2) throws RemoteException {
         try {
@@ -166,7 +181,20 @@ public class ServerService extends UnicastRemoteObject implements Service {
         return 2;
     }
 
-
+	
+	@Override
+	public void sendMessage(ClientFunction client, String message) throws RemoteException {
+			try {
+				client.getPartner().receiveMessage(message);
+			} catch (RemoteException e) {
+				unregister(client.getPartner());
+				client.waitReconnect(client.getTurn());
+				client.startMove(false);
+				disconnectedClients.add(client.getPartnerName());
+				System.out.println("oh no client dead at send message");
+			}
+		}
+	
 	@Override
 	public void sendBoardState(ClientFunction client, char[][] board) throws RemoteException {
 		try {
@@ -175,12 +203,29 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			client.getPartner().startMove(true);
 		} catch (RemoteException e) {
 			unregister(client.getPartner());
+			client.waitReconnect(false);
 			client.startMove(false);
-			client.waitReconnect();
+			disconnectedClients.add(client.getPartnerName());
 			System.out.println("oh no client dead at send board state");
 		}
 	}
 	
+	@Override
+	public void reconnectBoardState(ClientFunction client, char[][] board, char currentSymb, boolean disTurn) throws RemoteException {
+		try {
+			client.getPartner().receiveBoardState(board);
+			if(currentSymb == 'X') {
+				client.getPartner().assignSymb('O');
+			}else {
+				client.getPartner().assignSymb('X');
+			}
+			client.getPartner().startMove(!disTurn);
+        	client.startMove(disTurn);
+		} catch (RemoteException e) {
+			unregister(client.getPartner());
+			System.out.println("oh no client dead at reconnect board state");
+		}
+	}
 
 	@Override
 	public void announceWinner(ClientFunction client, char[][] board) throws RemoteException {
