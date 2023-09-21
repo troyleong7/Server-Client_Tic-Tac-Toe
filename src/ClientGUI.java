@@ -71,6 +71,9 @@ public class ClientGUI extends JFrame {
 	            	if(!tictactoe.isGameOver && !(partner == null)) {
 						server.forfeitGame(username);
 					}
+	            	else {
+	            		server.informPartner(username);
+	            	}
 	            	server.unregister(username);
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
@@ -85,10 +88,14 @@ public class ClientGUI extends JFrame {
 	            	if(!tictactoe.isGameOver  && !(partner == null)) {
 						server.forfeitGame(username);
 					}
+	            	else {
+	            		server.informPartner(username);
+	            	}
 	            	server.unregister(username);
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
 				}
+	            System.exit(0);
 	        }
 	    });
 		
@@ -325,7 +332,7 @@ public class ClientGUI extends JFrame {
 		crashFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		crashFrame.getContentPane().setLayout(null);
 		
-		JLabel crashLabel = new JLabel("Server Crashed! Client closing in 5");
+		JLabel crashLabel = new JLabel("Server unavailable! Client closing in 5");
 		crashLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		crashLabel.setBounds(10, 30, 268, 21);
 		crashFrame.getContentPane().add(crashLabel);
@@ -334,7 +341,7 @@ public class ClientGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
             	crashCount--;
-            	crashLabel.setText("Server Crashed! Client closing in " + crashCount);
+            	crashLabel.setText("Server unavailable! Client closing in " + crashCount);
                 if (crashCount == 0) {
                     crashTimer.stop();
                     System.exit(0);

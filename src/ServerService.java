@@ -2,7 +2,9 @@
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Random;
@@ -13,11 +15,13 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private static Map<String, Integer> clients;
 	private List<ClientFunction> activeClients;
     private Queue<ClientFunction> waitingClients;
     
 	protected ServerService() throws RemoteException {
 		super();
+		clients = new HashMap<String, Integer>();
 		activeClients = new ArrayList<>();
         waitingClients = new ConcurrentLinkedQueue<>();
 	}
@@ -25,7 +29,34 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	public int crashNotify() throws RemoteException{
         return 1;
     }
-
+	
+	@Override
+	public synchronized void logIn(ClientFunction newClient) throws RemoteException {
+		if (clients.isEmpty()){
+			newClient.setPoint(0);
+			int point = newClient.getPoint();
+			String name = newClient.getUsername();
+			clients.put(name, point);
+		} 
+		else {
+			boolean old = false;
+			int oldPoints = 0;
+			for (String i : clients.keySet()){
+				if(i.equals(newClient.getUsername())) {
+					old = true;
+				}
+			}
+			if(old) {
+				oldPoints = clients.get(newClient.getUsername());
+				newClient.setPoint(oldPoints);
+			}
+			else {
+				String name = newClient.getUsername();
+				clients.put(name, 0);
+			}
+			System.out.println(clients);
+		}
+	}
 	@Override
 	public synchronized void registerClient(ClientFunction client) throws RemoteException {
 		activeClients.add(client);
@@ -155,6 +186,10 @@ public class ServerService extends UnicastRemoteObject implements Service {
 					client.getPartner().receiveBoardState(board);
 					client.startMove(false);
 					client.getPartner().startMove(false);
+					client.setPoint(client.getPoint()+ 5);
+					client.getPartner().setPoint(client.getPoint() - 5);
+					changeScore(client.getUsername(), 5);
+					changeScore(client.getPartner().getUsername(), (-5));
 					client.receiveWinner(username);
 					client.getPartner().receiveWinner(username);
 				}
@@ -189,6 +224,10 @@ public class ServerService extends UnicastRemoteObject implements Service {
 				if(client.getUsername().equals(username)) {
 					client.startMove(false);
 					if(client.getPartner() != null) {
+						client.setPoint(client.getPoint() - 5);
+						client.getPartner().setPoint(client.getPoint() + 5);
+						changeScore(client.getUsername(), (-5));
+						changeScore(client.getPartner().getUsername(), 5);
 						informPartner(username);
 						client.receiveWinner(client.getPartner().getUsername());
 						client.getPartner().startMove(false);
@@ -215,6 +254,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		}
 	}
 	
+	@Override
 	public void informPartner(String username) throws RemoteException {
 		for (int i = 0; i < activeClients.size(); i++){
 			if(activeClients.get(i).getUsername().equals(username)) {
@@ -225,6 +265,20 @@ public class ServerService extends UnicastRemoteObject implements Service {
 					break;
 				}
 			}
+		}
+	}
+	
+	private void changeScore(String username, int score) {
+		int currentScore = clients.get(username);
+		if(score < 0){
+			if(currentScore >= 5) {
+				clients.put(username, currentScore + score);
+			}else {
+				clients.put(username, currentScore);
+			}
+		}
+		else {
+			clients.put(username, currentScore + score);
 		}
 	}
 }

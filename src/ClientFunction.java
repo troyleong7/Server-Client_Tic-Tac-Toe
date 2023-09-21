@@ -14,4 +14,6 @@ public interface ClientFunction extends Remote{
 	void receiveDraw() throws RemoteException;
 	void newGame() throws RemoteException;
 	void serverCrash() throws RemoteException;
+	void setPoint(int point) throws RemoteException;
+	int getPoint() throws RemoteException;
 }

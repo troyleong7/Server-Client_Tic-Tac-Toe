@@ -36,5 +36,7 @@ public interface Service extends Remote {
 	void informPartner(String username) throws RemoteException;
 
 	int crashNotify() throws RemoteException;
+
+	void logIn(ClientFunction newClient) throws RemoteException;
  
 }

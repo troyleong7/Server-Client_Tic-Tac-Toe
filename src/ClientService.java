@@ -12,12 +12,15 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	public String username;
 	public ClientFunction partner;
 	public boolean yourTurn;
+	public int points;
 	
 	protected ClientService(Service server, String username) throws RemoteException {
 		this.server = server;
 		this.username = username;
+		server.logIn(this);
 		GUI = new ClientGUI(username, server);
 		server.registerClient(this);
+		System.out.println(points);
 	}
 	
 	
@@ -98,5 +101,17 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		GUI.serverCrash();
 	}
 	
+	public void setPoint(int point) throws RemoteException {
+		if(point <= 0) {
+			this.points = 0;
+		}
+		else {
+			this.points = point;
+		}
+	}
+	
+	public int getPoint() throws RemoteException {
+		return points;
+	}
 
 }
