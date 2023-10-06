@@ -36,6 +36,7 @@ public class Client {
 	            }
 			}
 			
+			
 		}catch (IOException e) {
 			//Error for when no dictionary server found with the ip and port
 			System.err.println("Server host not found! Make sure to type in the correct IP and Port! Or make sure server is opened!");

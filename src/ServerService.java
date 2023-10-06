@@ -79,7 +79,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
 				} catch (RemoteException e) {
 					unregister(partner);
 					unregister(newClient);
-					System.out.println("error in reconnecting dc client");
+					System.out.println("Error in reconnect function");
 				}
 			}
 		}
@@ -130,7 +130,9 @@ public class ServerService extends UnicastRemoteObject implements Service {
         } catch (RemoteException e) {
         	unregister(client1);
         	unregister(client2);
-        	System.out.println("oh no client dead at pair state");
+        	System.out.println("Error in pair function: one of the client not found (" 
+        			+ client1.getUsername() + " " + client2.getUsername() + ")");
+        	registerClient(client1);
         }
     }
 
@@ -196,7 +198,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
 				client.waitReconnect(client.getTurn());
 				client.startMove(false);
 				disconnectedClients.add(client.getPartnerName());
-				System.out.println("oh no client dead at send message");
+				System.out.println("Error in sendMessage function: one of the client disconnected(" 
+						+ client.getUsername() + " " + client.getPartnerName() + ")");
 			}
 		}
 	
@@ -211,7 +214,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			client.waitReconnect(false);
 			client.startMove(false);
 			disconnectedClients.add(client.getPartnerName());
-			System.out.println("oh no client dead at send board state");
+			System.out.println("Error in sendBoardState function: one of the client disconnected(" 
+					+ client.getUsername() + " " + client.getPartnerName() + ")");
 		}
 	}
 	
@@ -228,7 +232,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
         	client.startMove(disTurn);
 		} catch (RemoteException e) {
 			unregister(client.getPartner());
-			System.out.println("oh no client dead at reconnect board state");
+			System.out.println("Error in reconnectBoardState function: one of the client disconnected(" 
+					+ client.getUsername() + " " + client.getPartnerName() + ")");
 		}
 	}
 
@@ -253,7 +258,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			changeScore(client.getPartnerName(), (-5));
 			client.receiveWinner(client.getUsername());
 			ranks = sortRanking(clients);
-			System.out.println("oh no client dead at announceWinner");
+			System.out.println("Error in announceWinner function: one of the client disconnected(" 
+					+ client.getUsername() + " " + client.getPartnerName() + ")");
 		}
 		System.out.println(clients);
 	}
@@ -279,7 +285,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			changeScore(client.getPartnerName(), 2);
 			client.receiveDraw();
 			ranks = sortRanking(clients);
-			System.out.println("oh no client dead at DrawGame");
+			System.out.println("Error in DrawGame function: one of the client disconnected(" 
+					+ client.getUsername() + " " + client.getPartnerName() + ")");
 		}
 		System.out.println(clients);
 	}
@@ -306,7 +313,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
 				changeScore(client.getPartnerName(), 5);
 				client.receiveWinner(client.getPartnerName());
 				ranks = sortRanking(clients);
-				System.out.println("oh no client dead at forfeit");
+				System.out.println("Error in forfeitGame function: one of the client disconnected(" 
+						+ client.getUsername() + " " + client.getPartnerName() + ")");
 			}
 		}
 		System.out.println(clients);
@@ -321,7 +329,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			unregister(client);
 			registerClient(client);		
 		} catch (Exception e){
-			System.out.println("oh no client dead at new Game");
+			System.out.println("Error in newGame function");
 		}
 	}
 	
@@ -378,6 +386,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	public void removeWaiting(String partner) throws RemoteException {
 		disconnectedClients.remove(partner);
 	}
+
 	
 	
 }
