@@ -33,6 +33,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
         waitingClients = new ConcurrentLinkedQueue<>();
 	}
 	
+	@Override
 	public int crashNotify() throws RemoteException{
         return 1;
     }
@@ -60,7 +61,9 @@ public class ServerService extends UnicastRemoteObject implements Service {
 				clients.put(name, 0);
 			}
 		}
+		System.out.println(clients);
 	}
+	
 	private void reconnect(ClientFunction newClient) throws RemoteException {
 		for(ClientFunction partner : activeClients) {
 			if(partner.getPartnerName().equals(newClient.getUsername())) {
@@ -107,8 +110,10 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	@Override
     public synchronized void unregister(ClientFunction client) throws RemoteException {
 		activeClients.remove(client);
-		if(waitingClients.peek() == client) {
-			waitingClients.remove(client);
+		if(!waitingClients.isEmpty()) {
+			 if(waitingClients.peek().equals(client)){
+				 waitingClients.remove(client);
+			 }
 		}
 	}
 	
@@ -124,7 +129,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
             randomAssign(client1, client2);
         } catch (RemoteException e) {
         	unregister(client1);
-        	unregister(client1);
+        	unregister(client2);
         	System.out.println("oh no client dead at pair state");
         }
     }
@@ -249,7 +254,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			client.receiveWinner(client.getUsername());
 			ranks = sortRanking(clients);
 			System.out.println("oh no client dead at announceWinner");
-		}	
+		}
+		System.out.println(clients);
 	}
 
 	@Override
@@ -275,6 +281,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			ranks = sortRanking(clients);
 			System.out.println("oh no client dead at DrawGame");
 		}
+		System.out.println(clients);
 	}
 	
 
@@ -301,7 +308,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
 				ranks = sortRanking(clients);
 				System.out.println("oh no client dead at forfeit");
 			}
-		}	
+		}
+		System.out.println(clients);
 	}
 	
 

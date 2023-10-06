@@ -115,6 +115,7 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		GUI.serverCrash();
 	}
 	
+	@Override
 	public void setPoint(int point) throws RemoteException {
 		if(point <= 0) {
 			this.points = 0;
@@ -124,15 +125,18 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		}
 	}
 	
+	@Override
 	public int getPoint() throws RemoteException {
 		return points;
 	}
 	
+	@Override
 	public void setRanking(int rank) throws RemoteException {
 		this.ranking = rank;
 		GUI.getRanking(rank);
 	}
 	
+	@Override
 	public void setPartnerRanking(int rank) throws RemoteException {
 		this.partnerRanking = rank;
 		GUI.getPartnerRanking(rank);

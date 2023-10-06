@@ -11,13 +11,17 @@ import java.rmi.registry.Registry;
  *
  */
 public class Client {
+	private static String username;
+	private static String ip;
+	private static int port;
 	
-
 	public static void main(String[] args) {
 		try {
-			String username;
 			username = args[0];
-			Registry registry = LocateRegistry.getRegistry("localhost");
+			ip = args[1];
+			port = Integer.parseInt(args[2]);
+			System.setProperty("java.rmi.server.hostname", ip);
+			Registry registry = LocateRegistry.getRegistry(port);
 			Service server = (Service) registry.lookup("Server");
 			System.out.println("Connected to server ");
 			ClientFunction client = new ClientService(server, username);
