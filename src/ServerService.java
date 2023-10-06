@@ -41,6 +41,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	@Override
 	public synchronized void logIn(ClientFunction newClient) throws RemoteException {
 		String name = newClient.getUsername();
+		System.out.println("Player " + name + " Connected!");
 		if (clients.isEmpty()){
 			newClient.setPoint(0);
 			clients.put(name, 0);
@@ -384,7 +385,6 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	@Override
 	public void clientStatus() throws RemoteException {
 		List<ClientFunction> removeList = new ArrayList<>();;
-		System.out.println("checking");
 		for(ClientFunction client : activeClients) {
 			try {
 				client.isAlive();
@@ -393,9 +393,12 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			}
 			
 		}
+		
 		for(ClientFunction dcClient : removeList) {
 			activeClients.remove(dcClient);
+			waitingClients.remove(dcClient);
 		}
+		
 		for(ClientFunction client : activeClients) {
 			if(client.getPartner()!= null && removeList.contains(client.getPartner())) {
 				try {
@@ -408,10 +411,13 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	}
 	
 	public void partnerDown(ClientFunction client) throws RemoteException {
-		unregister(client.getPartner());
-		client.waitReconnect(client.getTurn());
-		client.startMove(false);
-		disconnectedClients.add(client.getPartnerName());
+		System.out.println("Player " + client.getPartnerName() + " Disconnected!");
+		if(client.gameStart()) {
+			unregister(client.getPartner());
+			client.waitReconnect(client.getTurn());
+			client.startMove(false);
+			disconnectedClients.add(client.getPartnerName());
+		}
 	}
 
 	

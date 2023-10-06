@@ -32,7 +32,7 @@ public class Server{
     				System.out.println(e);
     				System.exit(0);
     			}
-    			Thread.sleep(1000);
+    			Thread.sleep(500);
     		}   
 		} catch (Exception e) {
 			System.out.println("Server problem. Port might be in used, change another port number");

@@ -16,6 +16,7 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	public int points;
 	public int ranking;
 	public int partnerRanking;
+	public boolean gameStart;
 	
 	protected ClientService(Service server, String username) throws RemoteException {
 		this.server = server;
@@ -57,9 +58,11 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		this.partner = partner;
 		if(partner != null) {
 			GUI.getPartner(partner.getUsername());
+			this.gameStart = true;
 		}
 		else {
 			GUI.getPartner(null);
+			this.gameStart = false;
 		}
 		this.partnerName = partner.getUsername();
 	}
@@ -91,6 +94,7 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 
 	@Override
 	public void receiveWinner(String username) throws RemoteException {
+		this.gameStart = false;
 		GUI.announceWinner(username);
 		GUI.showOption();
 	}
@@ -98,6 +102,7 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 
 	@Override
 	public void receiveDraw() throws RemoteException {
+		this.gameStart = false;
 		GUI.announceDraw();
 		GUI.showOption();
 	}
@@ -155,9 +160,13 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		
 	}
 
-
 	@Override
 	public int isAlive() throws RemoteException {
 		return 1;
+	}
+	
+	@Override
+	public boolean gameStart() throws RemoteException {
+		return gameStart;
 	}
 }
