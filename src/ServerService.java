@@ -285,8 +285,6 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			changeScore(client.getPartnerName(), 2);
 			client.receiveDraw();
 			ranks = sortRanking(clients);
-			System.out.println("Error in DrawGame function: one of the client disconnected(" 
-					+ client.getUsername() + " " + client.getPartnerName() + ")");
 		}
 		System.out.println(clients);
 	}
@@ -387,6 +385,20 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		disconnectedClients.remove(partner);
 	}
 
+	@Override
+	public int partnerStatus(ClientFunction client) throws RemoteException {
+		try {
+			ClientFunction partner = client.getPartner();
+			return partner.isAlive();
+		}catch (Exception e){
+			return -1;
+		}
+	}
+
+	@Override
+	public void disconnectClients(String partner) throws RemoteException {
+		disconnectedClients.add(partner);
+	}
 	
 	
 }

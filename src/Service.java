@@ -43,4 +43,7 @@ public interface Service extends Remote {
 
 	void removeWaiting(String partner) throws RemoteException;
  
+	int partnerStatus(ClientFunction client) throws RemoteException;
+
+	void disconnectClients(String client) throws RemoteException;
 }

@@ -22,4 +22,5 @@ public interface ClientFunction extends Remote{
 	void waitReconnect(boolean turn) throws RemoteException;
 	void receiveReconnect() throws RemoteException;
 	boolean getTurn() throws RemoteException;
+	int isAlive() throws RemoteException;;
 }

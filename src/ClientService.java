@@ -154,4 +154,10 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		GUI.receiveReconnect();
 		
 	}
+
+
+	@Override
+	public int isAlive() throws RemoteException {
+		return 0;
+	}
 }

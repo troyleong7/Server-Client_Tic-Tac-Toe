@@ -26,14 +26,30 @@ public class Client {
 			System.out.println("Connected to server ");
 			ClientFunction client = new ClientService(server, username);
 			
+			int status = 1;
 			while(true) {
 				try {
 	                server.crashNotify();
-	                Thread.sleep(1000);
 	            } catch (Exception e) {
 	               	client.serverCrash();
 	               	break;
 	            }
+				
+				if(client.getPartner() != null) {
+					status += server.partnerStatus(client);
+				}
+				else{
+					status = 1;
+				}
+				
+				if(status==0) {
+					server.unregister(client.getPartner());
+					client.waitReconnect(client.getTurn());
+					client.startMove(false);
+					server.disconnectClients(client.getPartnerName());
+				}
+				
+				Thread.sleep(1000);
 			}
 			
 			
