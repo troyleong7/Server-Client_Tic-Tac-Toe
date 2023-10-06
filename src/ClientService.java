@@ -158,6 +158,6 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 
 	@Override
 	public int isAlive() throws RemoteException {
-		return 0;
+		return 1;
 	}
 }

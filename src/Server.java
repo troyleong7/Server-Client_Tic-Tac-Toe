@@ -25,11 +25,19 @@ public class Server{
             registry.bind("Server", server);
             System.out.println("Server is running.");
             
+            while(true) {
+    			try {
+    				server.clientStatus();
+    			} catch (Exception e) {
+    				System.out.println(e);
+    				System.exit(0);
+    			}
+    			Thread.sleep(1000);
+    		}   
 		} catch (Exception e) {
 			System.out.println("Server problem. Port might be in used, change another port number");
 			System.exit(0);
 		}
-		
 	}
 
 }

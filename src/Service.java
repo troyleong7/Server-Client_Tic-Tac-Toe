@@ -42,8 +42,7 @@ public interface Service extends Remote {
 	void reconnectBoardState(ClientFunction client, char[][] board, char currentPlayer, boolean disTurn) throws RemoteException;
 
 	void removeWaiting(String partner) throws RemoteException;
+	
+	void clientStatus() throws RemoteException;
  
-	int partnerStatus(ClientFunction client) throws RemoteException;
-
-	void disconnectClients(String client) throws RemoteException;
 }

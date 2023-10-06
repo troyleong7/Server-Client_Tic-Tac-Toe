@@ -109,11 +109,15 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	
 	@Override
     public synchronized void unregister(ClientFunction client) throws RemoteException {
-		activeClients.remove(client);
-		if(!waitingClients.isEmpty()) {
-			 if(waitingClients.peek().equals(client)){
-				 waitingClients.remove(client);
-			 }
+		try {
+			activeClients.remove(client);
+			if(!waitingClients.isEmpty()) {
+				 if(waitingClients.peek().equals(client)){
+					 waitingClients.remove(client);
+				 }
+			}
+		} catch (Exception e) {
+			System.out.println("error in unregister");
 		}
 	}
 	
@@ -194,10 +198,6 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			try {
 				client.getPartner().receiveMessage(message);
 			} catch (RemoteException e) {
-				unregister(client.getPartner());
-				client.waitReconnect(client.getTurn());
-				client.startMove(false);
-				disconnectedClients.add(client.getPartnerName());
 				System.out.println("Error in sendMessage function: one of the client disconnected(" 
 						+ client.getUsername() + " " + client.getPartnerName() + ")");
 			}
@@ -205,15 +205,11 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	
 	@Override
 	public void sendBoardState(ClientFunction client, char[][] board) throws RemoteException {
+		client.startMove(false);
 		try {
 			client.getPartner().receiveBoardState(board);
-			client.startMove(false);
 			client.getPartner().startMove(true);
 		} catch (RemoteException e) {
-			unregister(client.getPartner());
-			client.waitReconnect(false);
-			client.startMove(false);
-			disconnectedClients.add(client.getPartnerName());
 			System.out.println("Error in sendBoardState function: one of the client disconnected(" 
 					+ client.getUsername() + " " + client.getPartnerName() + ")");
 		}
@@ -386,19 +382,37 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	}
 
 	@Override
-	public int partnerStatus(ClientFunction client) throws RemoteException {
-		try {
-			ClientFunction partner = client.getPartner();
-			return partner.isAlive();
-		}catch (Exception e){
-			return -1;
+	public void clientStatus() throws RemoteException {
+		List<ClientFunction> removeList = new ArrayList<>();;
+		System.out.println("checking");
+		for(ClientFunction client : activeClients) {
+			try {
+				client.isAlive();
+			}catch (Exception e){
+				removeList.add(client);
+			}
+			
 		}
-	}
-
-	@Override
-	public void disconnectClients(String partner) throws RemoteException {
-		disconnectedClients.add(partner);
+		for(ClientFunction dcClient : removeList) {
+			activeClients.remove(dcClient);
+		}
+		for(ClientFunction client : activeClients) {
+			if(client.getPartner()!= null && removeList.contains(client.getPartner())) {
+				try {
+					partnerDown(client);
+				}catch (Exception e){
+					System.out.println("Error in clientStatus function");
+				}
+			}
+		}	
 	}
 	
+	public void partnerDown(ClientFunction client) throws RemoteException {
+		unregister(client.getPartner());
+		client.waitReconnect(client.getTurn());
+		client.startMove(false);
+		disconnectedClients.add(client.getPartnerName());
+	}
+
 	
 }
