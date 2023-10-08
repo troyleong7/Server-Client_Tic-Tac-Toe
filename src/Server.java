@@ -9,6 +9,7 @@ public class Server{
 	
 	public static void main(String[] args)  {
 		try{
+			// Take in command argument 
 			ip = args[0];
 			port = Integer.parseInt(args[1]);
 			System.setProperty("java.rmi.server.hostname", ip);
@@ -20,17 +21,18 @@ public class Server{
 			System.exit(0);
 		}
 		try {
+			// Create server
 			Service server = new ServerService();
 			Registry registry = LocateRegistry.createRegistry(port);
             registry.bind("Server", server);
             System.out.println("Server is running.");
             
+            // Heartbeat function to see if active clients are still connected
             while(true) {
     			try {
     				server.clientStatus();
     			} catch (Exception e) {
     				System.out.println(e);
-    				System.exit(0);
     			}
     			Thread.sleep(500);
     		}   

@@ -14,11 +14,11 @@ public interface Service extends Remote {
 	void unregister(ClientFunction client) throws RemoteException;
 	void forfeitGame(ClientFunction client) throws RemoteException;
 	void newGame(ClientFunction client) throws RemoteException;
-	void informPartner(ClientFunction newClient) throws RemoteException;
+	void informOpponent(ClientFunction newClient) throws RemoteException;
 	int crashNotify() throws RemoteException;
 	void logIn(ClientFunction newClient) throws RemoteException;
 	void reconnectBoardState(ClientFunction client, char[][] board, char currentPlayer, boolean disTurn) throws RemoteException;
-	void removeWaiting(String partner) throws RemoteException;
+	void removeWaiting(String opponent) throws RemoteException;
 	void clientStatus() throws RemoteException;
  
 }

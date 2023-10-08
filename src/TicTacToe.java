@@ -88,7 +88,7 @@ public class TicTacToe extends JPanel implements ActionListener {
         }
     }
 
-
+    // Check winning condition after a move is made
     private void afterAction() {
     	try {
         	if(server.isGameOver(this) == 1) {
@@ -123,10 +123,13 @@ public class TicTacToe extends JPanel implements ActionListener {
 			}
         }
     }
+    
+    // Set the current player turn
     public void setTurn(boolean turn) {
     	yourTurn = turn;
     }
     
+    // Display the current board state
     public void displayBoard(char[][] newBoard) {
     	for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -137,11 +140,13 @@ public class TicTacToe extends JPanel implements ActionListener {
             }
     	}
     }
-
+    
+    // Game over signal 
 	public void GameOver() {
 		isGameOver = true;
 	}
-
+	
+	// Play random move
 	public void playRandomMove() {
 		List<List<Integer>> availableMove = new ArrayList<>();
 		int row = -1, col =-1;
@@ -164,6 +169,7 @@ public class TicTacToe extends JPanel implements ActionListener {
 		afterAction();
 	}
 	
+	// Reset the board to initial state
 	public void resetBoard(){
 		for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {

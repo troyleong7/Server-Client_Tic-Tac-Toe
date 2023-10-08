@@ -34,11 +34,13 @@ public class ServerService extends UnicastRemoteObject implements Service {
         waitingClients = new ConcurrentLinkedQueue<>();
 	}
 	
+	// To see if the server crashed
 	@Override
 	public int crashNotify() throws RemoteException{
         return 1;
     }
 	
+	// Client connect and log in to server function
 	@Override
 	public synchronized void logIn(ClientFunction newClient) throws RemoteException {
 		String name = newClient.getUsername();
@@ -66,20 +68,21 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		System.out.println(clients);
 	}
 	
+	// Client reconnect to server 
 	private void reconnect(ClientFunction newClient) throws RemoteException {
-		for(ClientFunction partner : activeClients) {
-			if(partner.getPartnerName().equals(newClient.getUsername())) {
+		for(ClientFunction opponent : activeClients) {
+			if(opponent.getOpponentName().equals(newClient.getUsername())) {
 				try {
 					ranks = sortRanking(clients);
-					partner.setPartner(newClient);
-					newClient.setPartner(partner);
+					opponent.setOpponent(newClient);
+					newClient.setOpponent(opponent);
 			        newClient.setRanking(ranks.get(newClient.getUsername()));
-			        partner.setRanking(ranks.get(partner.getUsername()));
-			        newClient.setPartnerRanking(ranks.get(partner.getUsername()));
-			        partner.setPartnerRanking(ranks.get(newClient.getUsername()));
-			        partner.receiveReconnect();
+			        opponent.setRanking(ranks.get(opponent.getUsername()));
+			        newClient.setOpponentRanking(ranks.get(opponent.getUsername()));
+			        opponent.setOpponentRanking(ranks.get(newClient.getUsername()));
+			        opponent.receiveReconnect();
 				} catch (RemoteException e) {
-					unregister(partner);
+					unregister(opponent);
 					unregister(newClient);
 					System.out.println("Error in reconnect function");
 				}
@@ -87,7 +90,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		}
 		
 	}
-
+	
+	// Register the client to active player list
 	@Override
 	public synchronized void registerClient(ClientFunction client) throws RemoteException {
 		boolean dc;
@@ -101,14 +105,15 @@ public class ServerService extends UnicastRemoteObject implements Service {
 			if (waitingClients.isEmpty()) {
 	            waitingClients.add(client);
 	        } else {
-	        	ClientFunction partner = waitingClients.poll();
-	            pair(client, partner);
+	        	ClientFunction opponent = waitingClients.poll();
+	            pair(client, opponent);
 	        }
 		}
 		
 		
 	}
 	
+	// Unregister the client in active player list
 	@Override
     public synchronized void unregister(ClientFunction client) throws RemoteException {
 		try {
@@ -123,15 +128,16 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		}
 	}
 	
+	// Pair two clients
 	private void pair(ClientFunction client1, ClientFunction client2) throws RemoteException {
         try {
         	ranks = sortRanking(clients);
-            client1.setPartner(client2);
-            client2.setPartner(client1);
+            client1.setOpponent(client2);
+            client2.setOpponent(client1);
             client1.setRanking(ranks.get(client1.getUsername()));
             client2.setRanking(ranks.get(client2.getUsername()));
-            client1.setPartnerRanking(ranks.get(client2.getUsername()));
-            client2.setPartnerRanking(ranks.get(client1.getUsername()));
+            client1.setOpponentRanking(ranks.get(client2.getUsername()));
+            client2.setOpponentRanking(ranks.get(client1.getUsername()));
             randomAssign(client1, client2);
         } catch (RemoteException e) {
         	unregister(client1);
@@ -142,6 +148,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
         }
     }
 
+	// Random assign symbols to client and which client start first
 	@Override
 	public void randomAssign(ClientFunction client1, ClientFunction client2) throws RemoteException {
 		Random random = new Random();
@@ -159,7 +166,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
         	client1.startMove(false);
         }
 	}
-
+	
+	// Check winning condition
 	@Override
 	public int isGameOver(TicTacToe tictactoe) throws RemoteException {
 		char[][] board = tictactoe.board;
@@ -194,133 +202,137 @@ public class ServerService extends UnicastRemoteObject implements Service {
         return 2;
     }
 
-	
+	// Client send message to opponent, server handles the transmission 
 	@Override
 	public void sendMessage(ClientFunction client, String message) throws RemoteException {
 			try {
-				client.getPartner().receiveMessage(message);
+				client.getOpponent().receiveMessage(message);
 			} catch (RemoteException e) {
 				System.out.println("Error in sendMessage function: one of the client disconnected(" 
-						+ client.getUsername() + " " + client.getPartnerName() + ")");
+						+ client.getUsername() + " " + client.getOpponentName() + ")");
 			}
 		}
 	
+	// Server update opponent the clients board state
 	@Override
 	public void sendBoardState(ClientFunction client, char[][] board) throws RemoteException {
 		client.startMove(false);
 		try {
-			client.getPartner().receiveBoardState(board);
-			client.getPartner().startMove(true);
+			client.getOpponent().receiveBoardState(board);
+			client.getOpponent().startMove(true);
 		} catch (RemoteException e) {
 			System.out.println("Error in sendBoardState function: one of the client disconnected(" 
-					+ client.getUsername() + " " + client.getPartnerName() + ")");
+					+ client.getUsername() + " " + client.getOpponentName() + ")");
 		}
 	}
 	
+	// Update board state to reconnected client
 	@Override
 	public void reconnectBoardState(ClientFunction client, char[][] board, char currentSymb, boolean disTurn) throws RemoteException {
 		try {
-			client.getPartner().receiveBoardState(board);
+			client.getOpponent().receiveBoardState(board);
 			if(currentSymb == 'X') {
-				client.getPartner().assignSymb('O');
+				client.getOpponent().assignSymb('O');
 			}else {
-				client.getPartner().assignSymb('X');
+				client.getOpponent().assignSymb('X');
 			}
-			client.getPartner().startMove(!disTurn);
+			client.getOpponent().startMove(!disTurn);
         	client.startMove(disTurn);
 		} catch (RemoteException e) {
-			unregister(client.getPartner());
+			unregister(client.getOpponent());
 			System.out.println("Error in reconnectBoardState function: one of the client disconnected(" 
-					+ client.getUsername() + " " + client.getPartnerName() + ")");
+					+ client.getUsername() + " " + client.getOpponentName() + ")");
 		}
 	}
-
+	
+	// Announcing the winner to clients
 	@Override
 	public void announceWinner(ClientFunction client, char[][] board) throws RemoteException {
 		try {
-			client.getPartner().receiveBoardState(board);
+			client.getOpponent().receiveBoardState(board);
 			client.startMove(false);
-			client.getPartner().startMove(false);
+			client.getOpponent().startMove(false);
 			client.setPoint(client.getPoint()+ 5);
-			client.getPartner().setPoint(client.getPoint() - 5);
+			client.getOpponent().setPoint(client.getPoint() - 5);
 			changeScore(client.getUsername(), 5);
-			changeScore(client.getPartner().getUsername(), (-5));
+			changeScore(client.getOpponent().getUsername(), (-5));
 			client.receiveWinner(client.getUsername());
-			client.getPartner().receiveWinner(client.getUsername());
+			client.getOpponent().receiveWinner(client.getUsername());
 			ranks = sortRanking(clients);
 		} catch (RemoteException e) {
-			unregister(client.getPartner());
+			unregister(client.getOpponent());
 			client.startMove(false);
 			client.setPoint(client.getPoint()+ 5);
 			changeScore(client.getUsername(), 5);
-			changeScore(client.getPartnerName(), (-5));
+			changeScore(client.getOpponentName(), (-5));
 			client.receiveWinner(client.getUsername());
 			ranks = sortRanking(clients);
 			System.out.println("Error in announceWinner function: one of the client disconnected(" 
-					+ client.getUsername() + " " + client.getPartnerName() + ")");
+					+ client.getUsername() + " " + client.getOpponentName() + ")");
 		}
 		System.out.println(clients);
 	}
-
+	
+	// Announcing game drawn to clients
 	@Override
 	public void drawGame(ClientFunction client, char[][] board) throws RemoteException {
 		try {
-			client.getPartner().receiveBoardState(board);
+			client.getOpponent().receiveBoardState(board);
 			client.startMove(false);
-			client.getPartner().startMove(false);
+			client.getOpponent().startMove(false);
 			client.setPoint(client.getPoint()+ 2);
-			client.getPartner().setPoint(client.getPoint() + 2);
+			client.getOpponent().setPoint(client.getPoint() + 2);
 			changeScore(client.getUsername(), 2);
-			changeScore(client.getPartnerName(), 2);
-			client.getPartner().receiveDraw();
+			changeScore(client.getOpponentName(), 2);
+			client.getOpponent().receiveDraw();
 			client.receiveDraw();
 			ranks = sortRanking(clients);
 		} catch (RemoteException e) {
-			unregister(client.getPartner());
+			unregister(client.getOpponent());
 			client.startMove(false);
 			client.setPoint(client.getPoint()+ 2);
 			changeScore(client.getUsername(), 2);
-			changeScore(client.getPartnerName(), 2);
+			changeScore(client.getOpponentName(), 2);
 			client.receiveDraw();
 			ranks = sortRanking(clients);
 		}
 		System.out.println(clients);
 	}
 	
-
+	// Inform opponent game client forfeit the game
 	@Override
 	public void forfeitGame(ClientFunction client) throws RemoteException {
 		client.startMove(false);
-		if(client.getPartner() != null) {
+		if(client.getOpponent() != null) {
 			try {
 				client.setPoint(client.getPoint() - 5);
-				client.getPartner().setPoint(client.getPoint() + 5);
+				client.getOpponent().setPoint(client.getPoint() + 5);
 				changeScore(client.getUsername(), (-5));
-				changeScore(client.getPartnerName(), 5);
-				informPartner(client);
-				client.receiveWinner(client.getPartnerName());
-				client.getPartner().startMove(false);
-				client.getPartner().receiveWinner(client.getPartnerName());
+				changeScore(client.getOpponentName(), 5);
+				informOpponent(client);
+				client.receiveWinner(client.getOpponentName());
+				client.getOpponent().startMove(false);
+				client.getOpponent().receiveWinner(client.getOpponentName());
 				ranks = sortRanking(clients);
 			} catch (RemoteException e) {
-				unregister(client.getPartner());
+				unregister(client.getOpponent());
 				client.setPoint(client.getPoint() - 5);
 				changeScore(client.getUsername(), (-5));
-				changeScore(client.getPartnerName(), 5);
-				client.receiveWinner(client.getPartnerName());
+				changeScore(client.getOpponentName(), 5);
+				client.receiveWinner(client.getOpponentName());
 				ranks = sortRanking(clients);
 				System.out.println("Error in forfeitGame function: one of the client disconnected(" 
-						+ client.getUsername() + " " + client.getPartnerName() + ")");
+						+ client.getUsername() + " " + client.getOpponentName() + ")");
 			}
 		}
 		System.out.println(clients);
 	}
 	
-
+	// Start new game
 	@Override
 	public void newGame(ClientFunction client) throws RemoteException {
 		try {
-			informPartner(client);
+			informOpponent(client);
 			client.newGame();
 			unregister(client);
 			registerClient(client);		
@@ -329,19 +341,21 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		}
 	}
 	
+	// Inform opponent client left
 	@Override
-	public void informPartner(ClientFunction client) throws RemoteException {
-		ClientFunction partner = client.getPartner();
+	public void informOpponent(ClientFunction client) throws RemoteException {
+		ClientFunction opponent = client.getOpponent();
 		try {
-			if(partner != null) {
-				partner.receiveMessage("Disconnected!");
-				partner.setPartner(null);
+			if(opponent != null) {
+				opponent.receiveMessage("Disconnected!");
+				opponent.setOpponent(null);
 			}
 		}catch (Exception e){
-			unregister(partner);
+			unregister(opponent);
 		}
 	}
 	
+	// update the point scoreboard
 	private void changeScore(String username, int score) {
 		int currentScore = clients.get(username);
 		if(score < 0){
@@ -356,6 +370,7 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		}
 	}
 	
+	// Sort the ranking of each client 
 	private LinkedHashMap<String, Integer> sortRanking(Map<String, Integer> hm) {
 		List<Map.Entry<String, Integer>> list = new ArrayList<>(hm.entrySet());
 
@@ -378,11 +393,13 @@ public class ServerService extends UnicastRemoteObject implements Service {
         return sortedHashMap;
 	}
 
+	// Remove client from waiting list
 	@Override
-	public void removeWaiting(String partner) throws RemoteException {
-		disconnectedClients.remove(partner);
+	public void removeWaiting(String opponent) throws RemoteException {
+		disconnectedClients.remove(opponent);
 	}
-
+	
+	// Keep track of each clients status
 	@Override
 	public void clientStatus() throws RemoteException {
 		List<ClientFunction> removeList = new ArrayList<>();;
@@ -401,9 +418,9 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		}
 		
 		for(ClientFunction client : activeClients) {
-			if(client.getPartner()!= null && removeList.contains(client.getPartner())) {
+			if(client.getOpponent()!= null && removeList.contains(client.getOpponent())) {
 				try {
-					partnerDown(client);
+					opponentDown(client);
 				}catch (Exception e){
 					System.out.println("Error in clientStatus function");
 				}
@@ -411,13 +428,14 @@ public class ServerService extends UnicastRemoteObject implements Service {
 		}	
 	}
 	
-	public void partnerDown(ClientFunction client) throws RemoteException {
-		System.out.println("Player " + client.getPartnerName() + " Disconnected!");
+	// When the client disconnected function 
+	public void opponentDown(ClientFunction client) throws RemoteException {
+		System.out.println("Player " + client.getOpponentName() + " Disconnected!");
 		if(client.gameStart()) {
-			unregister(client.getPartner());
+			unregister(client.getOpponent());
 			client.waitReconnect(client.getTurn());
 			client.startMove(false);
-			disconnectedClients.add(client.getPartnerName());
+			disconnectedClients.add(client.getOpponentName());
 		}
 	}
 

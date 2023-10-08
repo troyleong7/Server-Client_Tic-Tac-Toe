@@ -5,10 +5,10 @@ import java.rmi.RemoteException;
 
 public interface ClientFunction extends Remote{
 	String getUsername() throws RemoteException;
-	String getPartnerName() throws RemoteException;
+	String getOpponentName() throws RemoteException;
     void receiveMessage(String message) throws RemoteException;
-    ClientFunction getPartner() throws RemoteException;
-    void setPartner(ClientFunction partner) throws RemoteException;
+    ClientFunction getOpponent() throws RemoteException;
+    void setOpponent(ClientFunction opponent) throws RemoteException;
 	void playerFound() throws RemoteException;
 	void startMove(boolean move) throws RemoteException;
 	void receiveBoardState(char[][] board) throws RemoteException;
@@ -20,7 +20,7 @@ public interface ClientFunction extends Remote{
 	void setPoint(int point) throws RemoteException;
 	int getPoint() throws RemoteException;
 	void setRanking(int rank) throws RemoteException;
-	void setPartnerRanking(int rank) throws RemoteException;
+	void setOpponentRanking(int rank) throws RemoteException;
 	void waitReconnect(boolean turn) throws RemoteException;
 	void receiveReconnect() throws RemoteException;
 	boolean getTurn() throws RemoteException;

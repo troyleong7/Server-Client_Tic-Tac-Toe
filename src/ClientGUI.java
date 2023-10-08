@@ -1,3 +1,5 @@
+//Name: Yun Keng Leong	StudentID: 1133704
+
 import javax.swing.JFrame;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -20,10 +22,6 @@ import java.rmi.RemoteException;
 
 public class ClientGUI extends JFrame {
 	
-	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private static Timer timer;
 	private static Timer crashTimer;
@@ -40,16 +38,13 @@ public class ClientGUI extends JFrame {
 	public boolean turn;
 	public boolean disTurn;
 	public boolean wait;
-	private String partner;
+	private String opponent;
 	private int ranking;
-	private int partnerRanking;
+	private int opponentRanking;
 	String username;
 	Service server;
 	ClientFunction client;
-	/**
-	 * Create the application.
-	 * @throws RemoteException 
-	 */
+	
 	public ClientGUI(ClientFunction client, String username, Service server) throws RemoteException{
 		this.client = client;
 		this.server = server;
@@ -58,10 +53,11 @@ public class ClientGUI extends JFrame {
 		wait = false;
 		initialize();
 		
+		// Chat window text field listerner
 		messageField.addActionListener(new ActionListener() {
 		    @Override
 		    public void actionPerformed(ActionEvent e) {
-		    	if(partner != null && !wait) {
+		    	if(opponent != null && !wait) {
 			    	chatLog.updateChat("Rank#" + ranking + " " + username + " : " + messageField.getText());
 			    	try {
 			    		server.sendMessage(client, messageField.getText());
@@ -73,14 +69,15 @@ public class ClientGUI extends JFrame {
 		    }
 			});
 		
+		// Quit button listener
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-	            	if(!tictactoe.isGameOver && !(partner == null)) {
+	            	if(!tictactoe.isGameOver && !(opponent == null)) {
 						server.forfeitGame(client);
 					}
 	            	else {
-	            		server.informPartner(client);
+	            		server.informOpponent(client);
 	            	}
 	            	server.unregister(client);
 				} catch (RemoteException e1) {
@@ -90,14 +87,15 @@ public class ClientGUI extends JFrame {
 			}
 		});
 		
+		// Window closing listener
 		addWindowListener(new WindowAdapter() {
 	        public void windowClosing(WindowEvent e) {
 	            try {
-	            	if(!tictactoe.isGameOver  && !(partner == null)) {
+	            	if(!tictactoe.isGameOver  && !(opponent == null)) {
 						server.forfeitGame(client);
 					}
 	            	else {
-	            		server.informPartner(client);
+	            		server.informOpponent(client);
 	            	}
 	            	server.unregister(client);
 				} catch (RemoteException e1) {
@@ -107,6 +105,7 @@ public class ClientGUI extends JFrame {
 	        }
 	    });
 		
+		//Turn timer count down listener
 		timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -124,9 +123,8 @@ public class ClientGUI extends JFrame {
 		
 	}
 
-	/**
-	 * Initialize the contents of the frame.
-	 */
+
+	//Initialize the contents of the frame.
 	private void initialize() {
 		setBounds(100, 100, 670, 428);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -197,7 +195,7 @@ public class ClientGUI extends JFrame {
 		
 	}
 	
-	
+	// Start the timer
 	public void startTimer() {
 		countdown = 20;
 		timerPane.setFont(new Font("Tahoma", Font.PLAIN, 30));
@@ -205,6 +203,7 @@ public class ClientGUI extends JFrame {
         timer.start();
 	}
 	
+	// Update timer display
 	private static void updateTimerDisplay() {
         int seconds = countdown % 60;
         
@@ -221,24 +220,25 @@ public class ClientGUI extends JFrame {
         }
     }
 	
-	
+	// Announce winner in turn label
 	public void announceWinner(String winner) {
 		int winRank = 0;
 		if(winner.equals(username)) {
 			winRank = ranking;
 		} else {
-			winRank = partnerRanking;
+			winRank = opponentRanking;
 		}
 		turnLabel.setText("Player Rank#" + winRank + " " + winner + " wins!");
 		tictactoe.GameOver();
 		updateTimerDisplay();
 	}
 
-	
+	//Show the message sent or received
 	public void showMessage(String username, String message) {
-		chatLog.updateChat("Rank#" + partnerRanking + " " + username + " : " + message);
+		chatLog.updateChat("Rank#" + opponentRanking + " " + username + " : " + message);
 	}
 	
+	// Check to see if its your turn and make the required action
 	public void turn(boolean nextTurn) {
 		turn = nextTurn;
 		tictactoe.setTurn(nextTurn);
@@ -247,38 +247,43 @@ public class ClientGUI extends JFrame {
 			startTimer();
 		}
 		else {
-			char partnerSymb;
+			char opponentSymb;
 			countdown = -1;
 			updateTimerDisplay();
 			if(tictactoe.currentPlayer == 'O') {
-				partnerSymb = 'X';
+				opponentSymb = 'X';
 			}
 			else {
-				partnerSymb = 'O';
+				opponentSymb = 'O';
 			}
-			turnLabel.setText("Rank#" + partnerRanking + " " + partner + "'s turn (" + partnerSymb + ")");
+			turnLabel.setText("Rank#" + opponentRanking + " " + opponent + "'s turn (" + opponentSymb + ")");
 		}
 	}
 	
-	public void getPartner(String partner) {
-		this.partner = partner;
+	// Get the opponent name
+	public void getOpponent(String opponent) {
+		this.opponent = opponent;
 	}
 	
+	// Update the board
 	public void updateBoard(char[][] board) {
 		tictactoe.board = board;
 		tictactoe.displayBoard(board);
 	}
-
+	
+	// Get the player symbol
 	public void getSymbol(char symb) {
 		tictactoe.currentPlayer = symb;
 	}
-
+	
+	// Announce match drawn in turn label
 	public void announceDraw() {
 		turnLabel.setText("Match drawn");
 		tictactoe.GameOver();
 		updateTimerDisplay();
 	}
 	
+	// Show options after game end
 	public void showOption() {
 		JFrame frame = new JFrame();
 		frame.setResizable(false);
@@ -316,7 +321,7 @@ public class ClientGUI extends JFrame {
 		qButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					server.informPartner(client);
+					server.informOpponent(client);
 					server.unregister(client);
 				} catch (RemoteException e1) {
 					System.out.println("removed");;
@@ -328,7 +333,8 @@ public class ClientGUI extends JFrame {
 		
 		frame.setVisible(true);
 	}
-
+	
+	// Reset the GUI to initial state
 	public void resetGUI() {
 		wait = false;
 		tictactoe.resetBoard();
@@ -336,7 +342,8 @@ public class ClientGUI extends JFrame {
 		timerPane.setText("Finding player");
 		turnLabel.setText("");
 	}
-
+	
+	// Server crash panel 
 	public void serverCrash() {
 		JFrame crashFrame = new JFrame();
 		crashCount = 5;
@@ -367,16 +374,19 @@ public class ClientGUI extends JFrame {
 		crashTimer.start();
 		crashFrame.setVisible(true);
 	}
-
+	
+	// Get player ranking
 	public void getRanking(int rank) {
 		this.ranking = rank;
 	}
-
-	public void getPartnerRanking(int rank) {
-		this.partnerRanking = rank;
+	
+	// Get opponent ranking
+	public void getOpponentRanking(int rank) {
+		this.opponentRanking = rank;
 		
 	}
-
+	
+	// Wait for opponent to reconnect
 	public void waitReconnect(boolean isTurn) {
 		disTurn = isTurn;
 		wait = true;
@@ -404,7 +414,7 @@ public class ClientGUI extends JFrame {
 	                    waitTimer.stop();
 	                    try {
 							server.drawGame(client, tictactoe.board);
-							server.removeWaiting(partner);
+							server.removeWaiting(opponent);
 							waitFrame.dispose();
 						} catch (RemoteException e1) {
 							System.out.println("error in ClientGUI drawGame");
@@ -426,7 +436,8 @@ public class ClientGUI extends JFrame {
 		waitTimer.start();
 		waitFrame.setVisible(true);
 	}
-
+	
+	// When disconnected opponent reconnected
 	public void receiveReconnect() {
 		wait = false;
 	}

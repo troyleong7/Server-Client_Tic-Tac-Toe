@@ -22,6 +22,7 @@ public class ChatLog extends JPanel{
 	private JTextArea textArea9;
 	
 	public ChatLog() {
+		// The chat window GUI
 		setBackground(new Color(255, 255, 255));
 		setBounds(10, 11, 185, 290);
 		GridBagLayout gbl_panel = new GridBagLayout();
@@ -122,6 +123,7 @@ public class ChatLog extends JPanel{
 		
 	}
 	
+	// Update the chat log
 	public void updateChat(String message) {
 		textArea9.setText(textArea8.getText());
 		textArea8.setText(textArea7.getText());
@@ -134,7 +136,8 @@ public class ChatLog extends JPanel{
 		textArea1.setText(textArea0.getText());
 		textArea0.setText(message);
 	}
-
+	
+	// Reset the chat log
 	public void resetChat() {
 		textArea9.setText("");
 		textArea8.setText("");

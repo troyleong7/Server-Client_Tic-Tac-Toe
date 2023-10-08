@@ -4,13 +4,6 @@ import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-
-/**
- * This class retrieves a reference to the remote object from the RMI registry. It
- * invokes the methods on the remote object as if it was a local object of the type of the 
- * remote interface.
- *
- */
 public class Client {
 	private static String username;
 	private static String ip;
@@ -18,14 +11,18 @@ public class Client {
 	
 	public static void main(String[] args) {
 		try {
+			// Take in command argument 
 			username = args[0];
 			ip = args[1];
 			port = Integer.parseInt(args[2]);
+			
+			// Connect to server
 			Registry registry = LocateRegistry.getRegistry(ip, port);
 			Service server = (Service) registry.lookup("Server");
 			System.out.println("Connected to server ");
 			ClientFunction client = new ClientService(server, username);
 			
+			// Heartbeat function to see if the server is still online
 			while(true) {
 				try {
 	                server.crashNotify();

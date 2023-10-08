@@ -12,12 +12,12 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 	public ClientGUI GUI;
 	public Service server;
 	public String username;
-	public ClientFunction partner;
-	public String partnerName;
+	public ClientFunction opponent;
+	public String opponentName;
 	public boolean yourTurn;
 	public int points;
 	public int ranking;
-	public int partnerRanking;
+	public int opponentRanking;
 	public boolean gameStart;
 	
 	protected ClientService(Service server, String username) throws RemoteException {
@@ -28,72 +28,77 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		server.registerClient(this);
 	}
 	
-	
+	// Get client username
 	@Override
 	public String getUsername() throws RemoteException {
 		return username;
 	}
 	
+	// Get opponent username
 	@Override
-	public String getPartnerName() throws RemoteException {
-		return partnerName;
+	public String getOpponentName() throws RemoteException {
+		return opponentName;
 	}
 	
+	// Get client's current turn
 	@Override
 	public boolean getTurn() throws RemoteException {
 		return yourTurn;
 	}
 
-
+	// Receive message 
 	@Override
 	public void receiveMessage(String message) throws RemoteException {
-		GUI.showMessage(partner.getUsername(), message);
+		GUI.showMessage(opponent.getUsername(), message);
 	}
 	
+	// Get opponent
 	@Override
-	public ClientFunction getPartner() throws RemoteException {
-		return partner;
+	public ClientFunction getOpponent() throws RemoteException {
+		return opponent;
 	}
 	
+	// Set opponent
 	@Override
-	public void setPartner(ClientFunction partner) throws RemoteException {
-		this.partner = partner;
-		if(partner != null) {
-			GUI.getPartner(partner.getUsername());
+	public void setOpponent(ClientFunction opponent) throws RemoteException {
+		this.opponent = opponent;
+		if(opponent != null) {
+			GUI.getOpponent(opponent.getUsername());
 			this.gameStart = true;
 		}
 		else {
-			GUI.getPartner(null);
+			GUI.getOpponent(null);
 			this.gameStart = false;
 		}
-		this.partnerName = partner.getUsername();
+		this.opponentName = opponent.getUsername();
 	}
 
+	// When opponent is found
 	@Override
 	public void playerFound() throws RemoteException{
 		GUI.startTimer();
 	}
 
-
+	// Client's turn 
 	@Override
 	public void startMove(boolean move) throws RemoteException {
 		GUI.turn(move);
 		this.yourTurn = move;
 	}
 
-
+	// Receive board state from opponent
 	@Override
 	public void receiveBoardState(char[][] board) throws RemoteException {
 		GUI.updateBoard(board);
 	}
 
-
+	// Assigning client's symbol
 	@Override
 	public void assignSymb(char symb) throws RemoteException {
 		GUI.getSymbol(symb);
 	}
 
-
+	// Receive the winner announcement
 	@Override
 	public void receiveWinner(String username) throws RemoteException {
 		this.gameStart = false;
@@ -101,7 +106,7 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		GUI.showOption();
 	}
 
-
+	// Receive the draw announcement
 	@Override
 	public void receiveDraw() throws RemoteException {
 		this.gameStart = false;
@@ -109,19 +114,21 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		GUI.showOption();
 	}
 	
+	// Start new game
 	@Override
 	public void newGame() throws RemoteException {
-		this.partner = null;
-		GUI.getPartner(null);
+		this.opponent = null;
+		GUI.getOpponent(null);
 		GUI.resetGUI();
 	}
 
-
+	// Server crash notify
 	@Override
 	public void serverCrash() throws RemoteException {
 		GUI.serverCrash();
 	}
 	
+	// Set points
 	@Override
 	public void setPoint(int point) throws RemoteException {
 		if(point <= 0) {
@@ -132,41 +139,46 @@ public class ClientService extends UnicastRemoteObject implements ClientFunction
 		}
 	}
 	
+	// Get points
 	@Override
 	public int getPoint() throws RemoteException {
 		return points;
 	}
 	
+	// Set the ranking
 	@Override
 	public void setRanking(int rank) throws RemoteException {
 		this.ranking = rank;
 		GUI.getRanking(rank);
 	}
 	
+	// get the opponent's ranking
 	@Override
-	public void setPartnerRanking(int rank) throws RemoteException {
-		this.partnerRanking = rank;
-		GUI.getPartnerRanking(rank);
+	public void setOpponentRanking(int rank) throws RemoteException {
+		this.opponentRanking = rank;
+		GUI.getOpponentRanking(rank);
 	}
 
-
+	// Waiting for opponent to reconnect
 	@Override
 	public void waitReconnect(boolean turn) throws RemoteException {
 		GUI.waitReconnect(turn);
 	}
 
-
+	// Opponent reconnected notify
 	@Override
 	public void receiveReconnect() throws RemoteException {
 		GUI.receiveReconnect();
 		
 	}
-
+	
+	// Update client's status
 	@Override
 	public int isAlive() throws RemoteException {
 		return 1;
 	}
 	
+	// Check if the game started
 	@Override
 	public boolean gameStart() throws RemoteException {
 		return gameStart;
