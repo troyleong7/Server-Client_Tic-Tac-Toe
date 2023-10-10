@@ -100,26 +100,25 @@ public class TicTacToe extends JPanel implements ActionListener {
         		isDraw = true;
         	}
 		} catch (RemoteException e1) {
-			e1.printStackTrace();
+			System.out.println("Server crashed");
 		}
         if (isGameOver && !isDraw) {
         	try {
 				server.announceWinner(client, board);
 			} catch (RemoteException e1) {
-				e1.printStackTrace();
+				System.out.println("Server crashed");
 			}
         }else if(isGameOver && isDraw) {
         	try {
 				server.drawGame(client, board);
 			} catch (RemoteException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				System.out.println("Server crashed");
 			}
         }else {
             try {
 				server.sendBoardState(client, board);
 			} catch (RemoteException e1) {
-				e1.printStackTrace();
+				System.out.println("Server crashed");
 			}
         }
     }

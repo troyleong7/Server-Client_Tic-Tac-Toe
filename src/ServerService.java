@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.Random;
+import java.util.TreeMap;
 
 public class ServerService extends UnicastRemoteObject implements Service {
 	
@@ -44,7 +45,6 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	@Override
 	public synchronized void logIn(ClientFunction newClient) throws RemoteException {
 		String name = newClient.getUsername();
-		System.out.println("Player " + name + " Connected!");
 		if (clients.isEmpty()){
 			newClient.setPoint(0);
 			clients.put(name, 0);
@@ -372,7 +372,8 @@ public class ServerService extends UnicastRemoteObject implements Service {
 	
 	// Sort the ranking of each client 
 	private LinkedHashMap<String, Integer> sortRanking(Map<String, Integer> hm) {
-		List<Map.Entry<String, Integer>> list = new ArrayList<>(hm.entrySet());
+		Map<String,Integer> treeMap = new TreeMap<String,Integer>(hm);
+		List<Map.Entry<String, Integer>> list = new ArrayList<>(treeMap.entrySet());
 
         // Define a custom Comparator to sort by values in reverse order
         Comparator<Map.Entry<String, Integer>> valueComparator = (entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue());
